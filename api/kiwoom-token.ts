@@ -34,7 +34,16 @@ export async function getKiwoomToken(): Promise<string> {
   return j.token;
 }
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.query.debug) {
+    res.status(200).json({
+      base: process.env.KIWOOM_BASE || "(기본값 https://api.kiwoom.com)",
+      appkey_len: (process.env.KIWOOM_APP_KEY || "").length,
+      secretkey_len: (process.env.KIWOOM_SECRET_KEY || "").length,
+      hint: "appkey/secretkey_len 이 0이면 환경변수 미적용(재배포 필요). base가 키 종류(모의/실전)와 맞는지 확인.",
+    });
+    return;
+  }
   try {
     const token = await getKiwoomToken();
     res.status(200).json({ ok: true, token: token.slice(0, 8) + "…" });
