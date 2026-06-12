@@ -7,7 +7,7 @@ export interface Live {
 }
 export function useLive(): Live {
   const [s, setS] = useState<Live>({
-    clock: "--:--:--", ago: 0, ok: false, fx: "1,440원", fxLive: false, btc: "···", btcChg: null, btcLive: false, risk: 72,
+    clock: "--:--:--", ago: 0, ok: false, fx: "1,530원", fxLive: false, btc: "···", btcChg: null, btcLive: false, risk: 72,
   });
   const last = useRef(Date.now());
   useEffect(() => {

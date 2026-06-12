@@ -24,7 +24,7 @@ function mkStock(rank: number, name: string, code: string, chg: number, turnover
 export const SAMPLE: Briefing = {
   date: new Date().toISOString(),
   temp: 72,
-  tldr: "밤사이 미국 증시가 크게 올랐습니다. 이란 공습 철회로 지정학 리스크가 풀린 게 동력. 우리 시장도 우호적 출발이 예상되나, 1,440선 고환율은 부담입니다.",
+  tldr: "밤사이 미국 증시가 크게 올랐습니다. 이란 공습 철회로 지정학 리스크가 풀린 게 동력. 우리 시장도 우호적 출발이 예상되나, 1,530원대 고환율은 부담입니다.",
   points: ["나스닥 +2.54% · 반도체 강세 — 대형주 시초가 우호", "VIX −12% 공포 진정, 위험선호 회복"],
   usIndices: [
     { name: "나스닥", chg: 2.54, note: "기술주 주도", spark: [20, 18, 19, 13, 15, 8, 10, 3] },
@@ -39,7 +39,7 @@ export const SAMPLE: Briefing = {
   ],
   strategy: {
     up: "외국인 순매수 + 반도체 강세 지속 시 갭상승분 유지 가능",
-    dn: "원/달러 1,450 돌파 시 외국인 이탈 — 갭 메우기 주의",
+    dn: "원/달러 1,540 돌파 시 외국인 이탈 — 갭 메우기 주의",
     ob: "시초가 외국인 수급 · 반도체 대형주 거래량 집중도",
   },
   news: [
