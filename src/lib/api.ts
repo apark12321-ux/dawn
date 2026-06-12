@@ -1,53 +1,29 @@
-import { Briefing, Idx } from "./types";
+import { Briefing } from "./types";
 import { SAMPLE } from "../data/sample";
+import { EMPTY } from "./empty";
 
 /**
- * 브리핑 로드. 1순위 /api/briefing(서버리스), 폴백 SAMPLE.
- *
- * ▼ 실서비스에서 채울 API (시크릿은 서버리스에만):
- *   국내 지수·종목·수급·거래량상위·거래량프로파일 → 키움증권 REST API
- *       순위정보 /api/dostk/rkinfo (ka10030 당일거래량상위 등) + 실시간 체결 WebSocket(type 0B)
- *   미국 지수/선물/원자재 → yfinance 프록시 / Polygon / Twelve Data
- *   환율 → 한국은행 ECOS 또는 open.er-api.com
- *   뉴스 → 네이버 검색 API(news) / 언론사 RSS (+종목 연관 검색)
- *   공시 → DART OpenAPI
- *   캘린더 → 자체 큐레이션
+ * 브리핑 로드.
+ *  - 기본: /api/briefing (서버에서 키움·네이버·TwelveData 집계한 실데이터)
+ *  - 실패: EMPTY (가짜 숫자 없이 빈 상태 → 화면은 "연동 중" 표기)
+ *  - ?demo=1: SAMPLE (쇼케이스용)
+ * 환율·BTC·ETH 는 useLive 에서 실시간 직접 수신.
  */
 export async function fetchBriefing(): Promise<Briefing> {
+  if (new URLSearchParams(location.search).has("demo")) return SAMPLE;
   try {
     const r = await fetch("/api/briefing", { cache: "no-store" });
     if (!r.ok) throw new Error("no api");
-    return (await r.json()) as Briefing;
+    const j = await r.json();
+    return { ...EMPTY, ...j } as Briefing;
   } catch {
-    return SAMPLE;
+    return EMPTY;
   }
 }
 
 export async function fetchFX(): Promise<number | null> {
-  try {
-    const r = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" });
-    const j = await r.json();
-    return j?.rates?.KRW ?? null;
-  } catch { return null; }
+  try { const r = await fetch("https://open.er-api.com/v6/latest/USD", { cache: "no-store" }); const j = await r.json(); return j?.rates?.KRW ?? null; } catch { return null; }
 }
-
 export async function fetchBTC(): Promise<{ price: number; chg: number } | null> {
-  try {
-    const r = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", { cache: "no-store" });
-    const j = await r.json();
-    const price = parseFloat(j.lastPrice), chg = parseFloat(j.priceChangePercent);
-    if (isNaN(price)) return null;
-    return { price, chg };
-  } catch { return null; }
-}
-
-/** 미국 지수 실데이터 (/api/us-indices → Twelve Data). 실패 시 null → 프론트가 SAMPLE 유지. */
-export async function fetchUSIndices(): Promise<Idx[] | null> {
-  try {
-    const r = await fetch("/api/us-indices", { cache: "no-store" });
-    if (!r.ok) return null;
-    const j = await r.json();
-    if (!Array.isArray(j) || j.length === 0) return null;
-    return j as Idx[];
-  } catch { return null; }
+  try { const r = await fetch("https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT", { cache: "no-store" }); const j = await r.json(); const price = parseFloat(j.lastPrice), chg = parseFloat(j.priceChangePercent); if (isNaN(price)) return null; return { price, chg }; } catch { return null; }
 }

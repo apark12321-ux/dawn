@@ -53,3 +53,7 @@ export function Gate({ active, onUnlock, children, teaser }: {
     </div>
   );
 }
+
+export function Empty({ label }: { label: string }) {
+  return <div className="empty"><span className="edot" />{label}</div>;
+}

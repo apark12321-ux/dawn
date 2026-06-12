@@ -8,25 +8,22 @@ import { FlowSectors } from "./components/slides/FlowSectors";
 import { Stocks } from "./components/slides/Stocks";
 import { Pro } from "./components/slides/Pro";
 import { PriceModal, KakaoModal, StockModal, NewsModal } from "./components/Modals";
-import { fetchBriefing, fetchUSIndices } from "./lib/api";
+import { fetchBriefing } from "./lib/api";
 import { getTrial } from "./lib/trial";
 import { useLive } from "./hooks/useLive";
-import { SAMPLE } from "./data/sample";
+import { EMPTY } from "./lib/empty";
 import { Briefing, Stock, NewsItem } from "./lib/types";
 
 type Modal = { kind: "price" } | { kind: "kakao" } | { kind: "stock"; stock: Stock } | { kind: "news"; news: NewsItem } | null;
 
 export default function App() {
-  const [b, setB] = useState<Briefing>(SAMPLE);
+  const [b, setB] = useState<Briefing>(EMPTY);
   const live = useLive();
   const [trial] = useState(getTrial);
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToast] = useState("");
 
-  useEffect(() => {
-    fetchBriefing().then(setB).catch(() => {});
-    fetchUSIndices().then((us) => { if (us) setB((p) => ({ ...p, usIndices: us })); }).catch(() => {});
-  }, []);
+  useEffect(() => { fetchBriefing().then(setB).catch(() => {}); }, []);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(""), 2800); return () => clearTimeout(t); }, [toast]);
 
   const openPrice = () => setModal({ kind: "price" });

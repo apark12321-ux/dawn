@@ -42,11 +42,13 @@ export function Overview({ b, live, day, trialActive }: { b: Briefing; live: Liv
             <div className="dtemp-scale"><span>한파</span><span>흐림</span><span>온화</span><span>맑음</span></div>
           </div>
         </div>
-        <div className="tldr rise d3"><div className="eb">오늘의 한 줄</div><p>{b.tldr}</p></div>
-        <div className="points rise d4">
-          <div className="pt-h">핵심 포인트</div>
-          {b.points.map((p, i) => <div className="pl" key={i}><span className="mk">▸</span><div>{p}</div></div>)}
-        </div>
+        <div className="tldr rise d3"><div className="eb">오늘의 한 줄</div><p>{b.tldr || "데이터 연동 시 오늘의 시장 요약이 표시됩니다."}</p></div>
+        {b.points.length > 0 && (
+          <div className="points rise d4">
+            <div className="pt-h">핵심 포인트</div>
+            {b.points.map((p, i) => <div className="pl" key={i}><span className="mk">▸</span><div>{p}</div></div>)}
+          </div>
+        )}
       </div>
     </div>
   );
