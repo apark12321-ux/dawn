@@ -20,7 +20,7 @@ Vite + React + TypeScript. Vercel 배포. 데이터는 서버리스 함수(`api/
 | 국내 거래량/거래대금 상위·현재가·수급 | **키움증권 REST API** `POST /api/dostk/rkinfo` (api-id: `ka10030` 당일거래량상위 · `ka10032` 거래대금상위) | `api/quotes.ts` | `KIWOOM_APP_KEY`, `KIWOOM_SECRET_KEY`, `KIWOOM_BASE` |
 | 실시간 체결 → **거래량 프로파일(매물대)** | 키움 **WebSocket** `wss://api.kiwoom.com:10000/api/dostk/websocket` (주식체결 type `0B` 누적) | 별도 워커/크론 | 〃 |
 | 토큰 발급 | 키움 `POST /oauth2/token` (응답 필드 `token`) | `api/kiwoom-token.ts` | 〃 |
-| 미국 지수/선물/원자재/VIX | yfinance 프록시 · Polygon · Twelve Data 중 택1 | `api/briefing.ts` | (제공사 키) |
+| 미국 지수(나스닥/S&P/다우) | **Twelve Data** `quote?symbol=IXIC,SPX,DJI` (무료 키) | `api/us-indices.ts` | `TWELVEDATA_API_KEY` |
 | 환율(원/달러) | 한국은행 **ECOS** 또는 `open.er-api.com`(무키) | 프론트 직접 또는 서버 | (ECOS 시 키) |
 | 뉴스(시장·종목 연관) | **네이버 검색 API(news)** / 언론사 RSS | `api/news.ts` | `NAVER_CLIENT_ID/SECRET` |
 | 공시 | 금융감독원 **DART OpenAPI** | `api/briefing.ts` | `DART_API_KEY` |

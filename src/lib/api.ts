@@ -1,4 +1,4 @@
-import { Briefing } from "./types";
+import { Briefing, Idx } from "./types";
 import { SAMPLE } from "../data/sample";
 
 /**
@@ -38,5 +38,16 @@ export async function fetchBTC(): Promise<{ price: number; chg: number } | null>
     const price = parseFloat(j.lastPrice), chg = parseFloat(j.priceChangePercent);
     if (isNaN(price)) return null;
     return { price, chg };
+  } catch { return null; }
+}
+
+/** 미국 지수 실데이터 (/api/us-indices → Twelve Data). 실패 시 null → 프론트가 SAMPLE 유지. */
+export async function fetchUSIndices(): Promise<Idx[] | null> {
+  try {
+    const r = await fetch("/api/us-indices", { cache: "no-store" });
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (!Array.isArray(j) || j.length === 0) return null;
+    return j as Idx[];
   } catch { return null; }
 }

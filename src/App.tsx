@@ -8,7 +8,7 @@ import { FlowSectors } from "./components/slides/FlowSectors";
 import { Stocks } from "./components/slides/Stocks";
 import { Pro } from "./components/slides/Pro";
 import { PriceModal, KakaoModal, StockModal, NewsModal } from "./components/Modals";
-import { fetchBriefing } from "./lib/api";
+import { fetchBriefing, fetchUSIndices } from "./lib/api";
 import { getTrial } from "./lib/trial";
 import { useLive } from "./hooks/useLive";
 import { SAMPLE } from "./data/sample";
@@ -23,7 +23,10 @@ export default function App() {
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToast] = useState("");
 
-  useEffect(() => { fetchBriefing().then(setB).catch(() => {}); }, []);
+  useEffect(() => {
+    fetchBriefing().then(setB).catch(() => {});
+    fetchUSIndices().then((us) => { if (us) setB((p) => ({ ...p, usIndices: us })); }).catch(() => {});
+  }, []);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(""), 2800); return () => clearTimeout(t); }, [toast]);
 
   const openPrice = () => setModal({ kind: "price" });

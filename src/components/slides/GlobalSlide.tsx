@@ -15,7 +15,7 @@ export function GlobalSlide({ b, live, trialActive, openPrice }: { b: Briefing; 
           {b.usIndices.map((x, i) => (
             <div className={"card rise d" + (i + 1) + (i === 0 ? " lead" : "")} key={x.name}>
               <div className="name">{x.name}</div>
-              <div className="chg"><CountUp value={x.chg} dec={2} pre="▲" suf="%" run={active} /></div>
+              <div className="chg" style={{ color: x.chg >= 0 ? "var(--up)" : "var(--down)" }}><CountUp value={Math.abs(x.chg)} dec={2} pre={x.chg >= 0 ? "▲" : "▼"} suf="%" run={active} /></div>
               <div className="lv">{x.note}</div>
               <Spark pts={x.spark} />
             </div>
