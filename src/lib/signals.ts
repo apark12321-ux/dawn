@@ -56,7 +56,7 @@ export function analyzeSignal(c: OHLCV[]): Signal | null {
 }
 
 /** 비용모델: 순+targetPct% 내려면 필요한 총 상승률 % (왕복비용 반영). 정직 레이어. */
-export function grossNeededFor(targetNetPct = 1, roundTripCostPct = 0.46) { return +(targetNetPct + roundTripCostPct).toFixed(2); }
+export function grossNeededFor(targetNetPct = 1, roundTripCostPct = 0.44) { return +(targetNetPct + roundTripCostPct).toFixed(2); }
 
 /** 후보 리스트 점수 랭킹 + 과열 분리 */
 export function rankCandidates(items: { code: string; name: string; ohlcv: OHLCV[] }[]) {

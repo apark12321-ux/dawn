@@ -14,12 +14,15 @@ export interface Stock {
   profile: ProfileRow[];
   forecast: { trend: string; up: string; down: string };
 }
+export interface KrIndex { name: string; level: number; chg: number; state?: string; }
+
 export interface Briefing {
   date: string;
   temp: number;
   tldr: string;
   points: string[];
   usIndices: Idx[];
+  krIndices: KrIndex[];
   futures: { k: string; v: string; cls: "" | "up" | "down" }[];
   strategy: { up: string; dn: string; ob: string };
   news: NewsItem[];

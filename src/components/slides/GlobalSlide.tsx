@@ -31,6 +31,18 @@ export function GlobalSlide({ b, live, trialActive, openPrice }: { b: Briefing; 
           </div>
         ) : <Empty label="美 지수 데이터 연동 중" />}
 
+        {b.krIndices.length > 0 && (
+          <div className="kridx rise d2">
+            {b.krIndices.map((k) => (
+              <div className="krcard" key={k.name}>
+                <div className="krn">{k.name}{k.state === "REGULAR" ? <span className="krlive">LIVE</span> : <span className="krprev">전일</span>}</div>
+                <div className="krlv">{k.level.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                <div className="krc" style={{ color: k.chg >= 0 ? "var(--up)" : "var(--down)" }}>{k.chg >= 0 ? "▲" : "▼"}{Math.abs(k.chg).toFixed(2)}%</div>
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="live-h rise d3"><span>24시간 실시간</span><span className="lmini"><i />{live.ok ? "LIVE" : "샘플"} · 갱신 {live.ago}초 전</span></div>
         <div className="live4 rise d3">
           <div className="livecard"><div className="lk"><i />원/달러</div><div className="lv">{live.krw}</div><div className="ld" style={{ color: live.fxLive ? "var(--cyan)" : "var(--muted)" }}>{live.fxLive ? "실시간" : "연결 중"}</div></div>

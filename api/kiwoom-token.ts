@@ -13,16 +13,22 @@ const env = (k: string) => (process.env[k] || "").trim(); // 공백/줄바꿈 �
 export async function getKiwoomToken(): Promise<string> {
   if (cache && cache.exp > Date.now()) return cache.token;
   const base = env("KIWOOM_BASE") || "https://api.kiwoom.com";
-  const r = await fetch(`${base}/oauth2/token`, {
-    method: "POST",
-    headers: { "content-type": "application/json;charset=UTF-8" },
-    body: JSON.stringify({
-      grant_type: "client_credentials",
-      appkey: env("KIWOOM_APP_KEY"),
-      secretkey: env("KIWOOM_SECRET_KEY"),
-    }),
-  });
-  const j = await r.json();
+  const ac = new AbortController();
+  const tm = setTimeout(() => ac.abort(), 5000);
+  let j: any;
+  try {
+    const r = await fetch(`${base}/oauth2/token`, {
+      method: "POST",
+      headers: { "content-type": "application/json;charset=UTF-8" },
+      body: JSON.stringify({
+        grant_type: "client_credentials",
+        appkey: env("KIWOOM_APP_KEY"),
+        secretkey: env("KIWOOM_SECRET_KEY"),
+      }),
+      signal: ac.signal,
+    });
+    j = await r.json();
+  } finally { clearTimeout(tm); }
   if (!j.token) throw new Error("Kiwoom token failed: " + JSON.stringify(j));
   cache = { token: j.token, exp: Date.now() + 6 * 3600 * 1000 };
   return j.token;

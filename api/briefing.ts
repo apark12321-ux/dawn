@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getKiwoomToken } from "./kiwoom-token";
+import { krIndices } from "./kr-indices";
 
 /** 브리핑 통합 — 키움(주목주)·네이버(뉴스)·TwelveData(美지수) 집계. 각 호출 타임아웃·전체 try/catch로 보호. */
 const num = (v: any) => { const n = parseFloat(String(v ?? "").replace(/[^\d.\-]/g, "")); return isNaN(n) ? 0 : n; };
@@ -78,11 +79,12 @@ async function naverNews() {
 }
 function relTime(pub: string) { const t = new Date(pub).getTime(); if (isNaN(t)) return ""; const m = Math.floor((Date.now() - t) / 60000); if (m < 60) return `${m}분 전`; const h = Math.floor(m / 60); if (h < 24) return `${h}시간 전`; return `${Math.floor(h / 24)}일 전`; }
 
-function compose(us: any[], stocks: any[]) {
+function compose(us: any[], stocks: any[], kr: any[] = []) {
   const avg = us.length ? us.reduce((a, b) => a + b.chg, 0) / us.length : 0;
   const dir = avg > 0.5 ? "상승" : avg < -0.5 ? "하락" : "혼조";
   const open = avg > 0.5 ? "우호적인" : avg < -0.5 ? "조심스러운" : "제한적인";
-  const tldr = us.length ? `밤사이 미국 증시는 ${dir} 마감했습니다. ${us.map(u => `${u.name} ${u.chg >= 0 ? "+" : ""}${u.chg.toFixed(2)}%`).join(", ")}. 우리 시장도 ${open} 출발이 예상됩니다.` : "";
+  const krTxt = kr.length ? ` 전일 ${kr.map(k => `${k.name} ${k.chg >= 0 ? "+" : ""}${k.chg.toFixed(2)}%`).join(", ")}.` : "";
+  const tldr = us.length ? `밤사이 미국 증시는 ${dir} 마감했습니다. ${us.map(u => `${u.name} ${u.chg >= 0 ? "+" : ""}${u.chg.toFixed(2)}%`).join(", ")}.${krTxt} 우리 시장도 ${open} 출발이 예상됩니다.` : (kr.length ? `국내 지수${krTxt}` : "");
   const points = us.slice(0, 2).map(u => `${u.name} ${u.chg >= 0 ? "+" : ""}${u.chg.toFixed(2)}% · ${u.note}`);
   if (stocks.length) points.push(`거래대금 상위 ${stocks[0].name} 등 대형주 자금 집중`);
   const strategy = {
@@ -92,17 +94,21 @@ function compose(us: any[], stocks: any[]) {
   return { tldr, points, strategy, temp: Math.max(8, Math.min(95, Math.round(50 + avg * 8))) };
 }
 
+export const config = { maxDuration: 10 };
+
+const settle = async (p: Promise<any>) => { try { return await p; } catch (e: any) { return { data: [], ok: false, err: e?.message || "err" }; } };
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const [us, kw, news] = await Promise.all([usIndices(), kiwoomTop(), naverNews()]);
+    const [us, kw, news, kr] = await Promise.all([settle(usIndices()), settle(kiwoomTop()), settle(naverNews()), settle(krIndices())]);
     if (req.query.debug) {
-      res.status(200).json({ source: { us: us.ok, kiwoom: kw.ok, news: news.ok }, kiwoom_err: (kw as any).err || null, kiwoom_raw: (kw as any).raw ?? null, news_count: news.data.length, news_err: (news as any).err || null });
+      res.status(200).json({ source: { us: us.ok, kr: kr.ok, kiwoom: kw.ok, news: news.ok }, kr_data: kr.data, kiwoom_err: (kw as any).err || null, kiwoom_raw: (kw as any).raw ?? null, news_count: news.data.length });
       return;
     }
-    const ed = compose(us.data, kw.data);
+    const ed = compose(us.data, kw.data, kr.data);
     res.status(200).json({
       date: new Date().toISOString(), temp: ed.temp, tldr: ed.tldr, points: ed.points,
-      usIndices: us.data, futures: [], strategy: ed.strategy, news: news.data,
+      usIndices: us.data, krIndices: kr.data, futures: [], strategy: ed.strategy, news: news.data,
       holdingsImpact: [], watchNews: [], flow: [], sectors: [], flowNote: "", stocks: kw.data,
       source: { us: us.ok, kiwoom: kw.ok, news: news.ok },
     });
