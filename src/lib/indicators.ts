@@ -11,10 +11,10 @@ const crossedUpRecently = (fast: number[], slow: number[], bars = 5) => {
 };
 const crossedZeroUp = (v: number[], bars = 5) => { const n = v.length; for (let i = Math.max(1, n - bars); i < n; i++) if (v[i - 1] <= 0 && v[i] > 0) return { cross: true, day: i }; return { cross: false, day: -1 }; };
 
-function macd(c: number[]) { const e12 = ema(c, 12), e26 = ema(c, 26); const line = e12.map((v, i) => v - e26[i]); const sig = ema(line, 9); const x = crossedUpRecently(line, sig); return { value: line.at(-1)!, signal: sig.at(-1)!, hist: line.at(-1)! - sig.at(-1)!, ...x }; }
+function macd(c: number[]) { const e12 = ema(c, 12), e26 = ema(c, 26); const line = e12.map((v, i) => v - e26[i]); const sig = ema(line, 9); const x = crossedUpRecently(line, sig); return { value: line[line.length - 1], signal: sig[sig.length - 1], hist: line[line.length - 1] - sig[sig.length - 1], ...x }; }
 function stochastic(c: OHLCV[], n = 14, d = 3) {
   const k: number[] = []; for (let i = 0; i < c.length; i++) { const s = c.slice(Math.max(0, i - n + 1), i + 1); const hi = Math.max(...s.map(x => x.high)), lo = Math.min(...s.map(x => x.low)); k.push(hi === lo ? 50 : (c[i].close - lo) / (hi - lo) * 100); }
-  const dline = ema(k, d); const x = crossedUpRecently(k, dline); return { k: k.at(-1)!, d: dline.at(-1)!, ...x };
+  const dline = ema(k, d); const x = crossedUpRecently(k, dline); return { k: k[k.length - 1], d: dline[dline.length - 1], ...x };
 }
 function dmi(c: OHLCV[], n = 14) {
   const plus: number[] = [], minus: number[] = [], tr: number[] = [];
@@ -27,12 +27,12 @@ function dmi(c: OHLCV[], n = 14) {
   const atr = sm(tr), pDI = sm(plus).map((v, i) => atr[i] ? 100 * v / atr[i] : 0), mDI = sm(minus).map((v, i) => atr[i] ? 100 * v / atr[i] : 0);
   const dx = pDI.map((v, i) => (v + mDI[i]) ? 100 * Math.abs(v - mDI[i]) / (v + mDI[i]) : 0); const adx = ema(dx, n);
   const x = crossedUpRecently(pDI, mDI);
-  return { pDI: pDI.at(-1)!, mDI: mDI.at(-1)!, adx: adx.at(-1)!, ...x };
+  return { pDI: pDI[pDI.length - 1], mDI: mDI[mDI.length - 1], adx: adx[adx.length - 1], ...x };
 }
 function cci(c: OHLCV[], n = 20) {
   const tp = c.map(x => (x.high + x.low + x.close) / 3); const out: number[] = [];
   for (let i = 0; i < tp.length; i++) { const s = tp.slice(Math.max(0, i - n + 1), i + 1); const m = s.reduce((a, b) => a + b, 0) / s.length; const md = s.reduce((a, b) => a + Math.abs(b - m), 0) / s.length; out.push(md ? (tp[i] - m) / (0.015 * md) : 0); }
-  const x = crossedZeroUp(out); return { value: out.at(-1)!, ...x };
+  const x = crossedZeroUp(out); return { value: out[out.length - 1], ...x };
 }
 
 export interface FourArrow {
@@ -50,7 +50,7 @@ export function fourArrow(c: OHLCV[]): FourArrow | null {
 /** 수급 에너지 5조건 점수 (0~5). 시총·거래량밀도·프로그램수급·캔들건전성·52주근접. */
 export function energyScore(p: { marketCap?: number; ohlcv: OHLCV[]; programNetBuy?: number }) {
   const c = p.ohlcv; if (!c || c.length < 6) return { score: 0, conds: {} as any };
-  const last = c.at(-1)!, prev = c.at(-2)!;
+  const last = c[c.length - 1], prev = c[c.length - 2];
   const vols = c.map(x => x.volume);
   const cap = (p.marketCap ?? 0) >= 3e11 && (p.marketCap ?? 0) <= 1e13;             // 중대형 구간
   const vol = last.volume > (vols.slice(-6, -1).reduce((a, b) => a + b, 0) / 5) * 1.5; // 거래량 밀도
