@@ -5,10 +5,10 @@ import { Briefing } from "../lib/types";
  * /api/briefing (서버리스)에서 KIS·뉴스·환율 API를 모아 반환한 값으로 대체됩니다.
  * 이 파일은 API 응답 스키마의 레퍼런스이자 오프라인 폴백입니다.
  */
-function mkStock(rank: number, name: string, code: string, chg: number, turnover: string, volume: string, pos52: string, pro: boolean) {
+function mkStock(rank: number, name: string, code: string, chg: number, turnover: string, volume: string, pos52: string, reason: string, pro: boolean) {
   return {
-    rank, name, market: "KOSPI", code, chg, turnover, volume, pos52, pro,
-    note: rank === 5 ? "거래대금 1.8조 · 외국인 순매수 전환" : `거래대금 ${turnover} · 거래량 집중`,
+    rank, name, market: "KOSPI", code, chg, turnover, volume, pos52, pro, reason,
+    note: `거래대금 ${turnover}`,
     spark: [20, 17, 18, 12, 13, 7, 5].map((y) => y + (rank % 3)),
     profile: [
       { price: 214000, vol: 34 }, { price: 209000, vol: 96, poc: true }, { price: 204000, vol: 40 },
@@ -64,10 +64,10 @@ export const SAMPLE: Briefing = {
   ],
   flowNote: "자금은 반도체로 집중, 방산에서 이탈 — 주도주 쏠림 장세",
   stocks: [
-    mkStock(1, "삼성전자", "005930", 1.9, "3.4조", "1,240만주", "상단 71%", false),
-    mkStock(2, "한미반도체", "042700", 4.8, "1.1조", "210만주", "상단 95%", true),
-    mkStock(3, "에코프로", "086520", 3.1, "9,800억", "180만주", "상단 64%", true),
-    mkStock(4, "포스코퓨처엠", "003670", 2.4, "7,200억", "150만주", "상단 58%", true),
-    mkStock(5, "SK하이닉스", "000660", 3.2, "1.8조", "868만주", "상단 82%", false),
+    mkStock(1, "삼성전자", "005930", 1.9, "3.4조", "1,240만주", "상단 71%", "외국인 순매수 전환 · HBM 신규 공급계약", false),
+    mkStock(2, "SK하이닉스", "000660", 3.2, "1.8조", "868만주", "상단 82%", "외국인 24거래일 만 순매수 · 반도체 강세", false),
+    mkStock(3, "한미반도체", "042700", 4.8, "1.1조", "210만주", "상단 95%", "거래대금 급증 · HBM 장비 수혜 부각", true),
+    mkStock(4, "에코프로", "086520", 3.1, "9,800억", "180만주", "상단 64%", "2차전지 반등 · 양극재 증설 발표", true),
+    mkStock(5, "포스코퓨처엠", "003670", 2.4, "7,200억", "150만주", "상단 58%", "양극재 신규 수주 기대 · 기관 순매수", true),
   ],
 };

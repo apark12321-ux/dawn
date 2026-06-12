@@ -1,42 +1,47 @@
 import { useRef } from "react";
 import { Briefing, Stock } from "../../lib/types";
 import { useActive } from "../Deck";
-import { CountUp, Spark, LockIcon } from "../ui";
+import { CountUp, LockIcon } from "../ui";
 
 export function Stocks({ b, trialActive, openPrice, openStock }: {
   b: Briefing; trialActive: boolean; openPrice: () => void; openStock: (s: Stock) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const active = useActive(ref);
-  const five = b.stocks.find((s) => s.rank === 5)!;
+  const lead = b.stocks.find((s) => s.name === "SK하이닉스") || b.stocks[0];
 
   return (
     <div ref={ref}>
-      <div className="shead"><span className="ix">05</span><h2>거래량 상위 종목</h2><span className="of">탭하면 상세</span></div>
+      <div className="shead"><span className="ix">05</span><h2>오늘의 주목주</h2><span className="of">AI 선별 · 관찰용</span></div>
       <div className="scontent">
+        <div className="pk-note rise d1">수급·거래량·뉴스로 선별한 관찰 종목입니다 · 투자 권유 아님</div>
         <div className="rank rise d1">
-          {b.stocks.map((s) => {
+          {b.stocks.map((s, i) => {
             const locked = s.pro && !trialActive;
             if (locked) return (
-              <div className="rk lock" key={s.rank} onClick={openPrice}>
-                <span className="no">{s.rank}</span>
-                <div className="body"><div className="nm" style={{ width: 50 + s.rank * 2 + "%" }} /><div className="meta" style={{ width: 44 - s.rank * 2 + "%" }} /></div>
+              <div className="pk lock" key={s.rank} onClick={openPrice}>
+                <span className="pk-no">{i + 1}</span>
+                <div className="pk-body"><div className="pk-name-sk" style={{ width: 46 + (i % 3) * 8 + "%" }} /><div className="pk-rsn-sk" style={{ width: 70 - (i % 3) * 6 + "%" }} /></div>
                 <LockIcon cls="lk2" />
               </div>
             );
             return (
-              <div className="rk open" key={s.rank} onClick={() => openStock(s)}>
-                <span className="no">{s.rank}</span>
-                <div className="body"><div className="nm-r">{s.name}{s.rank === 5 && <span className="pv-badge">탭하면 상세</span>}</div><div className="meta-r">{s.note}</div></div>
-                <Spark pts={s.spark} cls="mini" />
-                <div className="chg-r"><CountUp value={s.chg} dec={1} pre="▲" suf="%" run={active} /></div>
+              <div className="pk" key={s.rank} onClick={() => openStock(s)}>
+                <span className="pk-no">{i + 1}</span>
+                <div className="pk-body">
+                  <div className="pk-name"><span className="t">{s.name}</span>{!s.pro ? <span className="pk-tag free">무료</span> : <span className="pk-tag">PRO</span>}</div>
+                  <div className="pk-rsn">{s.reason}</div>
+                </div>
+                <div className="pk-chg" style={{ color: s.chg >= 0 ? "var(--up)" : "var(--down)" }}>
+                  <CountUp value={Math.abs(s.chg)} dec={1} pre={s.chg >= 0 ? "▲" : "▼"} suf="%" run={active} />
+                </div>
               </div>
             );
           })}
         </div>
         <div className="vp rise d2">
-          <div className="vh"><span className="vt">{five.name} · 거래량 프로파일</span><span className="vs">매물대</span></div>
-          {five.profile.map((p) => (
+          <div className="vh"><span className="vt">{lead.name} · 거래량 프로파일</span><span className="vs">매물대</span></div>
+          {lead.profile.map((p) => (
             <div className={"vpr" + (p.poc ? " poc" : "")} key={p.price}>
               <span className="pr">{p.price.toLocaleString("en-US")}</span>
               <div className="trk"><i style={{ width: active ? p.vol + "%" : 0 }} /></div>
@@ -50,7 +55,7 @@ export function Stocks({ b, trialActive, openPrice, openStock }: {
             <div className="frost" />
             <div className="vface">
               <div className="vlock"><LockIcon /></div>
-              <div><div className="vk">PRO ACCESS</div><div className="vt">1~4위 · 전 종목 매물대</div></div>
+              <div><div className="vk">PRO ACCESS</div><div className="vt">전체 주목주 · 종목별 매물대</div></div>
               <button className="vbtn" onClick={openPrice}>열어보기 <span>→</span></button>
             </div>
           </div>

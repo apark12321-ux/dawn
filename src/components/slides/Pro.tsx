@@ -3,7 +3,7 @@ function KakaoIcon() {
 }
 export function Pro({ openPrice, openKakao }: { openPrice: () => void; openKakao: () => void }) {
   const rows: [string, string, string][] = [
-    ["아침 브리핑 · 뉴스", "✓", "✓"], ["거래량 상위 종목", "5위", "전체"],
+    ["아침 브리핑 · 뉴스", "✓", "✓"], ["오늘의 주목주", "2종목", "전체"],
     ["거래량 프로파일", "—", "✓"], ["관심종목 맞춤·뉴스", "—", "✓"], ["장중 급변 알림", "—", "✓"],
   ];
   return (
