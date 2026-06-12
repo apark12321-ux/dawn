@@ -1,46 +1,45 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 /**
- * 키움증권 REST API 접근토큰 발급 (서버 전용).
- * 신청: https://openapi.kiwoom.com  (PC에서만, HTS ID 연결 필요 / 국내주식·ETF·ETN)
- * 환경변수:
- *   KIWOOM_APP_KEY, KIWOOM_SECRET_KEY
- *   KIWOOM_BASE = https://api.kiwoom.com      (실전)
- *               = https://mockapi.kiwoom.com  (모의투자)
- *
- * POST /oauth2/token
- *   body: { grant_type:"client_credentials", appkey, secretkey }
- *   res : { token, token_type:"bearer", expires_dt:"YYYYMMDDHHmmss" }
- * ※ 응답 토큰 필드명은 access_token 이 아니라 "token" 입니다.
+ * 키움증권 REST API 접근토큰 (서버 전용).
+ * 실전: KIWOOM_BASE=https://api.kiwoom.com / 모의: https://mockapi.kiwoom.com
+ * POST /oauth2/token { grant_type:"client_credentials", appkey, secretkey } → { token, ... }
+ * env: KIWOOM_APP_KEY, KIWOOM_SECRET_KEY, KIWOOM_BASE
  */
 let cache: { token: string; exp: number } | null = null;
 
+const env = (k: string) => (process.env[k] || "").trim(); // 공백/줄바꿈 제거
+
 export async function getKiwoomToken(): Promise<string> {
   if (cache && cache.exp > Date.now()) return cache.token;
-  const base = process.env.KIWOOM_BASE || "https://api.kiwoom.com";
+  const base = env("KIWOOM_BASE") || "https://api.kiwoom.com";
   const r = await fetch(`${base}/oauth2/token`, {
     method: "POST",
     headers: { "content-type": "application/json;charset=UTF-8" },
     body: JSON.stringify({
       grant_type: "client_credentials",
-      appkey: process.env.KIWOOM_APP_KEY,
-      secretkey: process.env.KIWOOM_SECRET_KEY,
+      appkey: env("KIWOOM_APP_KEY"),
+      secretkey: env("KIWOOM_SECRET_KEY"),
     }),
   });
   const j = await r.json();
   if (!j.token) throw new Error("Kiwoom token failed: " + JSON.stringify(j));
-  // expires_dt(만료시각)까지지만, 보수적으로 6시간 캐시
   cache = { token: j.token, exp: Date.now() + 6 * 3600 * 1000 };
   return j.token;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.query.debug) {
+    const rawA = process.env.KIWOOM_APP_KEY || "", rawS = process.env.KIWOOM_SECRET_KEY || "";
     res.status(200).json({
-      base: process.env.KIWOOM_BASE || "(기본값 https://api.kiwoom.com)",
-      appkey_len: (process.env.KIWOOM_APP_KEY || "").length,
-      secretkey_len: (process.env.KIWOOM_SECRET_KEY || "").length,
-      hint: "appkey/secretkey_len 이 0이면 환경변수 미적용(재배포 필요). base가 키 종류(모의/실전)와 맞는지 확인.",
+      base: env("KIWOOM_BASE") || "(기본값 https://api.kiwoom.com)",
+      appkey_len: rawA.length,
+      appkey_trimmed_len: rawA.trim().length,
+      appkey_has_space_or_newline: rawA !== rawA.trim(),
+      secretkey_len: rawS.length,
+      secretkey_trimmed_len: rawS.trim().length,
+      secretkey_has_space_or_newline: rawS !== rawS.trim(),
+      hint: "len이 0이면 미적용(재배포). has_space_or_newline:true면 값 끝 공백/줄바꿈 → 다시 깔끔히 입력. appkey/secretkey 자리 바뀜·앱 승인상태도 확인.",
     });
     return;
   }

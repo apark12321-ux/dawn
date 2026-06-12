@@ -43,7 +43,7 @@ export function StockModal({ stock, onClose }: { stock: Stock; onClose: () => vo
     <Sheet onClose={onClose}>
       <div className="s-head">
         <div><div className="s-name">{stock.name}</div><div className="s-sub">{stock.market} · {stock.code}</div></div>
-        <div><div className="s-price">{(209500).toLocaleString("en-US")}</div><div className="s-chg" style={{ color: stock.chg >= 0 ? "var(--up)" : "var(--down)" }}>{sign}{Math.abs(stock.chg).toFixed(1)}%</div></div>
+        <div><div className="s-price">{stock.price.toLocaleString("en-US")}원</div><div className="s-chg" style={{ color: stock.chg >= 0 ? "var(--up)" : "var(--down)" }}>{sign}{Math.abs(stock.chg).toFixed(1)}%</div></div>
       </div>
       <div className="s-stats">
         <div className="s-stat"><div className="sk">거래대금</div><div className="sv">{stock.turnover}</div></div>

@@ -5,18 +5,25 @@ import { Briefing } from "../lib/types";
  * /api/briefing (서버리스)에서 KIS·뉴스·환율 API를 모아 반환한 값으로 대체됩니다.
  * 이 파일은 API 응답 스키마의 레퍼런스이자 오프라인 폴백입니다.
  */
-function mkStock(rank: number, name: string, code: string, chg: number, turnover: string, volume: string, pos52: string, reason: string, pro: boolean) {
+function won(n: number) { return n.toLocaleString("en-US"); }
+
+function mkStock(rank: number, name: string, code: string, market: string, price: number, chg: number, turnover: string, volume: string, pos52: string, reason: string, pro: boolean) {
+  const unit = price >= 100000 ? 1000 : price >= 10000 ? 500 : 100;
+  const poc = Math.round(price / unit) * unit;
+  const hi = Math.round((poc * 1.024) / unit) * unit;
+  const lo = Math.round((poc * 0.976) / unit) * unit;
+  const won = (n: number) => n.toLocaleString("en-US");
   return {
-    rank, name, market: "KOSPI", code, chg, turnover, volume, pos52, pro, reason,
-    note: `거래대금 ${turnover}`,
+    rank, name, market, code, price, chg, turnover, volume, pos52, pro, reason,
+    note: rank === 5 ? "거래대금 1.8조 · 외국인 순매수 전환" : `거래대금 ${turnover}`,
     spark: [20, 17, 18, 12, 13, 7, 5].map((y) => y + (rank % 3)),
     profile: [
-      { price: 214000, vol: 34 }, { price: 209000, vol: 96, poc: true }, { price: 204000, vol: 40 },
+      { price: hi, vol: 34 }, { price: poc, vol: 96, poc: true }, { price: lo, vol: 40 },
     ],
     forecast: {
       trend: "단기 상승 · 변동성 보통 — 외국인 순매수 전환이 동력",
-      up: "POC 209,000 위 안착 시 매물대 가벼워져 강세 지속 여지",
-      down: "POC 이탈 시 204,000까지 단기 조정 가능",
+      up: `POC ${won(poc)} 위 안착 시 매물대 가벼워져 강세 지속 여지`,
+      down: `POC 이탈 시 ${won(lo)}까지 단기 조정 가능`,
     },
   };
 }
@@ -64,10 +71,10 @@ export const SAMPLE: Briefing = {
   ],
   flowNote: "자금은 반도체로 집중, 방산에서 이탈 — 주도주 쏠림 장세",
   stocks: [
-    mkStock(1, "삼성전자", "005930", 1.9, "3.4조", "1,240만주", "상단 71%", "외국인 순매수 전환 · HBM 신규 공급계약", false),
-    mkStock(2, "SK하이닉스", "000660", 3.2, "1.8조", "868만주", "상단 82%", "외국인 24거래일 만 순매수 · 반도체 강세", false),
-    mkStock(3, "한미반도체", "042700", 4.8, "1.1조", "210만주", "상단 95%", "거래대금 급증 · HBM 장비 수혜 부각", true),
-    mkStock(4, "에코프로", "086520", 3.1, "9,800억", "180만주", "상단 64%", "2차전지 반등 · 양극재 증설 발표", true),
-    mkStock(5, "포스코퓨처엠", "003670", 2.4, "7,200억", "150만주", "상단 58%", "양극재 신규 수주 기대 · 기관 순매수", true),
+    mkStock(1, "삼성전자", "005930", "KOSPI", 78600, 1.9, "3.4조", "1,240만주", "상단 71%", "외국인 순매수 전환 · HBM 신규 공급계약", false),
+    mkStock(2, "SK하이닉스", "000660", "KOSPI", 209500, 3.2, "1.8조", "868만주", "상단 82%", "외국인 24거래일 만 순매수 · 반도체 강세", false),
+    mkStock(3, "한미반도체", "042700", "KOSPI", 131500, 4.8, "1.1조", "210만주", "상단 95%", "거래대금 급증 · HBM 장비 수혜 부각", true),
+    mkStock(4, "에코프로", "086520", "KOSDAQ", 92400, 3.1, "9,800억", "180만주", "상단 64%", "2차전지 반등 · 양극재 증설 발표", true),
+    mkStock(5, "포스코퓨처엠", "003670", "KOSPI", 248000, 2.4, "7,200억", "150만주", "상단 58%", "양극재 신규 수주 기대 · 기관 순매수", true),
   ],
 };

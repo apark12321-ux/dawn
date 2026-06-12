@@ -9,7 +9,7 @@ export interface NewsItem {
 export interface ProfileRow { price: number; vol: number; poc?: boolean; }
 export interface Stock {
   rank: number; name: string; market: string; code: string;
-  chg: number; turnover: string; volume: string; pos52: string;
+  price: number; chg: number; turnover: string; volume: string; pos52: string;
   note: string; reason: string; spark: number[]; pro: boolean;
   profile: ProfileRow[];
   forecast: { trend: string; up: string; down: string };
