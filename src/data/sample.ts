@@ -38,6 +38,10 @@ export const SAMPLE: Briefing = {
     { name: "S&P 500", chg: 1.75, note: "광범위 강세", spark: [19, 18, 16, 17, 12, 13, 8, 5] },
     { name: "다우", chg: 1.86, note: "50,848", spark: [20, 16, 18, 13, 14, 9, 10, 6] },
   ],
+  krIndices: [
+    { name: "코스피", level: 2734.56, chg: 0.82, state: "CLOSED" },
+    { name: "코스닥", level: 891.23, chg: 1.14, state: "CLOSED" },
+  ],
   futures: [
     { k: "코스피200 야간선물", v: "▲0.6%", cls: "up" },
     { k: "美 10년물", v: "4.21%", cls: "" },
