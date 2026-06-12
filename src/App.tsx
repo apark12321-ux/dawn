@@ -13,10 +13,16 @@ import { getTrial } from "./lib/trial";
 import { useLive } from "./hooks/useLive";
 import { EMPTY } from "./lib/empty";
 import { Briefing, Stock, NewsItem } from "./lib/types";
+import Finder from "./finder/Finder";
 
 type Modal = { kind: "price" } | { kind: "kakao" } | { kind: "stock"; stock: Stock } | { kind: "news"; news: NewsItem } | null;
 
 export default function App() {
+  if (typeof window !== "undefined" && window.location.pathname.replace(/\/+$/, "") === "/finder") return <Finder />;
+  return <Briefingapp />;
+}
+
+function Briefingapp() {
   const [b, setB] = useState<Briefing>(EMPTY);
   const live = useLive();
   const [trial] = useState(getTrial);
@@ -51,6 +57,7 @@ export default function App() {
       {modal?.kind === "stock" && <StockModal stock={modal.stock} onClose={close} />}
       {modal?.kind === "news" && <NewsModal news={modal.news} onClose={close} />}
       {toast && <div className="toast show">{toast}</div>}
+      <a href="/finder" className="finder-fab">탐색기 →</a>
     </>
   );
 }
