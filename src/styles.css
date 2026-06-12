@@ -123,6 +123,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .livecard .lv{font-family:var(--mono);font-size:16px;font-weight:600;margin-top:7px;letter-spacing:-.02em;position:relative;z-index:1}
 .livecard .ld{font-family:var(--mono);font-size:9.5px;margin-top:2px}
 
+.live-h{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 0;font-size:11.5px;font-weight:600;color:var(--text-2)}
+.live-h .lmini{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9.5px;color:var(--cyan);letter-spacing:.05em}
+.live-h .lmini i{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 1.8s infinite}
+.live4{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.refline{margin-top:12px;font-family:var(--mono);font-size:10px;line-height:1.7;color:var(--muted);letter-spacing:.01em;background:var(--surface-2);border-radius:11px;padding:10px 13px;word-break:keep-all}
+.refline b{color:var(--text-2);font-weight:600}
+.refline .rk2{color:var(--gold);letter-spacing:.1em;margin-right:7px;font-weight:600}
+.refline .ref-note{margin-top:7px;color:var(--muted);font-size:9px;letter-spacing:.02em;opacity:.85}
+
+
 .idx{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px}
 .idx .card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px 12px 10px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
 .idx .card.lead{border-color:rgba(240,69,75,.4)}
