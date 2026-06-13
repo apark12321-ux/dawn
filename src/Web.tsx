@@ -164,8 +164,8 @@ function Page({ no, title, of, cls, style, children }: { no: string; title: stri
   );
 }
 
-export default function Web({ b, live, openStock, openNews }: {
-  b: Briefing; live: Live;
+export default function Web({ b, live, onLite, openStock, openNews }: {
+  b: Briefing; live: Live; onLite: () => void;
   openPrice: () => void; openKakao: () => void; openStock: (s: Stock) => void; openNews: (n: NewsItem) => void;
 }) {
   const [cur, setCur] = useState(0);
@@ -279,8 +279,9 @@ export default function Web({ b, live, openStock, openNews }: {
   return (
     <>
       <div className="hud">
-        <span className="brand">DAWN</span><span className="kr">여명 · v19</span>
+        <span className="brand">DAWN</span><span className="kr">여명 · v20</span>
         <span className="date">{fmtDate()}</span>
+        <button className="hud-mode" onClick={onLite}>🔰 초보</button>
         <span className="clk"><i style={{ opacity: live.ok ? 1 : 0.3 }} />{live.clock}</span>
       </div>
 
