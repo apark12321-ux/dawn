@@ -720,3 +720,55 @@ body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opa
   .dp-grid{display:grid!important;grid-template-columns:repeat(2,1fr)!important}
   .dp-grid>.panel{grid-column:auto!important}
 }
+
+/* === 섹터 전망 · 이슈 · 전망 리포트 === */
+.vrow{padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.vrow:last-child{border-bottom:none}
+.vh{display:flex;align-items:center;gap:8px}
+.vn{font-size:14px;font-weight:600;color:var(--text)}
+.vbadge{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;margin-left:auto}
+.vbadge.vp{color:var(--up);background:var(--up-soft);border:1px solid rgba(255,77,94,.25)}
+.vbadge.vd{color:var(--down);background:rgba(77,141,255,.12);border:1px solid rgba(77,141,255,.25)}
+.vbadge.vm{color:var(--gold);background:rgba(240,180,80,.12);border:1px solid rgba(240,180,80,.25)}
+.vnote{font-size:12.5px;color:var(--text2);line-height:1.55;margin-top:5px}
+.iss{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.iss:last-child{border-bottom:none}
+.icat{flex:0 0 auto;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:6px;background:rgba(120,160,255,.12);color:var(--text2);min-width:38px;text-align:center}
+.icat.u{color:var(--up);background:var(--up-soft)}.icat.d{color:var(--down);background:rgba(77,141,255,.12)}
+.itt{font-size:13.5px;line-height:1.45;color:var(--text)}
+.report p{font-size:14px;line-height:1.8;color:var(--text);margin:0 0 12px;padding-left:14px;position:relative}
+.report p::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:50%;background:var(--dawn)}
+.report p:last-child{margin-bottom:0}
+.rfine{margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5;border-top:1px solid var(--line);padding-top:10px}
+@media(max-width:768px){
+  .vn{font-size:13.5px!important}.vnote{font-size:12.5px!important}
+  .itt{font-size:13px!important}.report p{font-size:13.5px!important;line-height:1.75!important}
+}
+
+/* === 투자매력도 마인드맵 === */
+.mindmap{width:100%;height:auto;max-height:62vh;flex:1;min-height:0;display:block;margin:4px auto}
+.mindmap .mlink{stroke:rgba(120,160,255,.22);stroke-width:1.5}
+.mindmap .mlink.on{stroke:var(--cyan);stroke-width:2.5;filter:drop-shadow(0 0 5px var(--cyan))}
+.mindmap .mcore{fill:rgba(10,16,32,.9);stroke:url(#none);stroke:rgba(120,160,255,.5);stroke-width:2;filter:drop-shadow(0 0 16px rgba(255,150,120,.35))}
+.mindmap .mscore{font-family:var(--mono);font-size:30px;font-weight:700;fill:#FFB778}
+.mindmap .mcorel{font-size:10px;fill:var(--text2);font-weight:600}
+.mindmap .mcorel2{font-size:8px;fill:var(--muted)}
+.mindmap .mnode{opacity:.92;stroke:rgba(255,255,255,.15);stroke-width:1.5;transition:.2s}
+.mindmap .mnode.on{stroke:#fff;stroke-width:2.5;filter:drop-shadow(0 0 10px currentColor)}
+.mindmap .mnt{font-size:11.5px;font-weight:700;fill:#0a0e1a}
+.mindmap .mnv{font-size:8.5px;font-weight:600;fill:rgba(10,14,26,.7)}
+.mlegend{display:flex;justify-content:center;gap:16px;font-size:11px;color:var(--text2);margin-top:2px}
+.mlegend span{display:flex;align-items:center;gap:5px}
+.mlegend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+@media(max-width:768px){.mindmap{max-height:none;height:340px}.mindmap .mscore{font-size:26px}.mindmap .mnt{font-size:11px}}
+
+/* === 가치주 스크리너 카테고리 === */
+.cattabs{display:flex;gap:7px;flex-wrap:wrap}
+.cattab{font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:20px;border:1px solid var(--line2);background:rgba(10,16,32,.5);color:var(--text2);cursor:pointer;transition:.2s}
+.cattab:hover{border-color:var(--cyan);color:var(--text)}
+.cattab.on{background:var(--dawn);color:#0a0e1a;border-color:transparent;font-weight:700}
+.catdesc{font-size:12px;color:var(--text2);line-height:1.5;margin-top:9px}
+.tbl tr.selrow{background:rgba(91,225,255,.08)}
+.tbl tr.selrow td{color:var(--text)}
+.tbl td.g{color:var(--cyan);font-weight:700}
+@media(max-width:768px){.cattab{font-size:12px;padding:6px 12px}.tbl th:nth-child(5),.tbl td:nth-child(5){display:table-cell}}

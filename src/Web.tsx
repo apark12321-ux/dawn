@@ -56,6 +56,102 @@ const SAMPLE_SECTORS = [{ name: "반도체", chg: 5.8 }, { name: "바이오", ch
 const SUPPLY = [["외국인", 3260, true], ["기관계", -2390, false], ["└ 연기금", 1210, true], ["└ 금융투자", -1320, false], ["개인", -870, false]] as [string, number, boolean][];
 const CAL = [["08:00", "NXT 장전 시간외 개시"], ["09:00", "정규장 개장"], ["08:30", "美 5월 CPI 발표(밤)"], ["10:00", "삼성전자 컨퍼런스콜"], ["16:00", "SK하이닉스 수주 공시 예정"], ["21:30", "美 신규 실업수당 청구"]] as [string, string][];
 
+// 섹터 전망 (종목추천 X · 업종 방향성만 · 주린이용 쉬운 설명)
+const SECTOR_OUTLOOK = [
+  { name: "반도체", view: "긍정", note: "AI 메모리(HBM) 수요가 강해요. 외국인 매수도 이쪽에 몰리는 중." },
+  { name: "바이오", view: "긍정", note: "기술수출 기대감이 살아있어요. 다만 뉴스에 따라 출렁임이 큰 편." },
+  { name: "2차전지", view: "관망", note: "전기차 성장 둔화 우려로 한동안 등락을 반복하고 있어요." },
+  { name: "방산", view: "긍정", note: "해외 수출 수주가 계속 나오면서 흐름이 좋습니다." },
+  { name: "자동차", view: "중립", note: "환율은 유리하지만 관세 리스크가 섞여 방향이 애매해요." },
+  { name: "금융", view: "중립", note: "금리 인하 기대와 실적 사이에서 눈치보기 장세." },
+] as { name: string; view: string; note: string }[];
+
+// 시장에 영향 주는 국내외 이슈 (경제·금융·사회)
+const SAMPLE_ISSUES = [
+  { cat: "금융", title: "외국인 24거래일 만에 순매수 전환… 반도체 집중", impact: "긍정" },
+  { cat: "경제", title: "美 5월 CPI 둔화 전망 — 연내 금리 인하 기대 확산", impact: "긍정" },
+  { cat: "경제", title: "원/달러 환율 안정세, 외국인 자금 유입 우호적", impact: "긍정" },
+  { cat: "사회", title: "반도체 특별법 국회 통과… 투자 세액공제 확대", impact: "긍정" },
+  { cat: "금융", title: "기관·외국인 4.5조 동반 매수, 대형주 쏠림", impact: "중립" },
+  { cat: "경제", title: "국제유가 소폭 상승 — 정유·화학 원가 부담 변수", impact: "부정" },
+] as { cat: string; title: string; impact: string }[];
+
+// 오늘의 전망 리포트 (주린이용 · 쉬운 말 · 매수/매도 권유 없음)
+const REPORT = [
+  "밤사이 미국 증시가 강세로 마감했어요. 보통 미국이 오르면 다음 날 우리 시장도 기분 좋게 출발하는 경우가 많습니다.",
+  "외국인이 다시 사기 시작했어요. 외국인 매수는 주로 삼성전자·SK하이닉스 같은 큰 종목에 힘을 실어줍니다.",
+  "환율(원/달러)이 안정적이에요. 환율이 내려가면 외국인이 한국 주식을 사기 편해집니다.",
+  "변동성 지수(VIX)가 낮아 시장은 차분한 편이에요. 다만 단기간에 많이 오른 뒤에는 쉬어가는 조정도 올 수 있어 무리한 추격은 주의가 필요합니다.",
+];
+
+// 섹터 → 상위종목·관련종목 (정보 제공용 · 추천 아님)
+const SECTOR_STOCKS: Record<string, string[]> = {
+  "반도체": ["삼성전자", "SK하이닉스", "한미반도체"],
+  "바이오": ["알테오젠", "리가켐바이오", "셀트리온"],
+  "2차전지": ["LG에너지솔루션", "에코프로비엠", "포스코퓨처엠"],
+  "방산": ["한화에어로스페이스", "LIG넥스원", "현대로템"],
+  "자동차": ["현대차", "기아", "현대모비스"],
+  "금융": ["KB금융", "신한지주", "메리츠금융"],
+};
+// 스크리너 카테고리 (객관적 재무지표 · 추천 아님 · 확장 가능한 카테고리 구조)
+type ScrItem = { name: string; code: string; sector: string; per: number; pbr: number; roe: number; div: number; sales: string; op: string; why: string };
+const SCREENERS: { key: string; label: string; desc: string; items: ScrItem[] }[] = [
+  {
+    key: "value", label: "가치주 · 저평가", desc: "PER·PBR은 낮은데 매출·이익은 꾸준히 느는 기업 (적립식·가치투자용 객관 지표)",
+    items: [
+      { name: "기업은행", code: "024110", sector: "금융", per: 5.2, pbr: 0.42, roe: 9.1, div: 6.8, sales: "3년↑", op: "+12%", why: "PER 5.2배로 은행업 평균(약 6.5배)보다 낮고, 순이익이 3년 연속 증가. 배당수익률 6.8%로 적립식에 유리한 구조." },
+      { name: "현대차", code: "005380", sector: "자동차", per: 5.1, pbr: 0.58, roe: 12.3, div: 4.5, sales: "3년↑", op: "+9%", why: "글로벌 판매 견조로 매출 3년 연속 증가, PBR 0.58배로 자산가치 대비 저평가 구간." },
+      { name: "KB금융", code: "105560", sector: "금융", per: 6.0, pbr: 0.52, roe: 9.5, div: 5.0, sales: "3년↑", op: "+7%", why: "ROE 9.5%·PBR 0.52배. 이익 성장과 배당 확대를 동시에 보이는 저PER 금융주." },
+      { name: "삼성화재", code: "000810", sector: "금융", per: 8.2, pbr: 1.0, roe: 11.5, div: 5.4, sales: "3년↑", op: "+15%", why: "보험이익 성장으로 영업이익 +15%, 배당수익률 5.4%. 안정적 현금흐름." },
+      { name: "HD현대", code: "267250", sector: "지주", per: 6.8, pbr: 0.70, roe: 10.2, div: 3.8, sales: "3년↑", op: "+18%", why: "조선·정유 자회사 실적 개선으로 이익 급증, PER 6.8배 저평가." },
+      { name: "POSCO홀딩스", code: "005490", sector: "철강", per: 9.1, pbr: 0.50, roe: 6.8, div: 3.5, sales: "유지", op: "흑자", why: "PBR 0.5배로 순자산 절반 가격대. 철강 업황 회복 시 밸류 정상화 여지." },
+    ],
+  },
+  {
+    key: "growth", label: "성장주", desc: "매출·이익이 빠르게 늘고 ROE가 높은 기업 (PER은 다소 높을 수 있음)",
+    items: [
+      { name: "알테오젠", code: "196170", sector: "바이오", per: 45.0, pbr: 12.0, roe: 22.0, div: 0, sales: "+58%", op: "+70%", why: "기술수출 로열티로 매출 +58% 고성장, ROE 22%. 성장 프리미엄으로 PER은 높은 편." },
+      { name: "한미반도체", code: "042700", sector: "반도체", per: 28.0, pbr: 8.0, roe: 31.0, div: 0.6, sales: "+40%", op: "+52%", why: "HBM 본더 수요로 매출 +40%, ROE 31%의 고수익 성장주." },
+      { name: "HD현대일렉트릭", code: "267260", sector: "전력", per: 19.0, pbr: 5.2, roe: 28.0, div: 1.1, sales: "+35%", op: "+60%", why: "전력기기 수출 호조로 영업이익 +60%, 수주잔고 사상 최대." },
+      { name: "삼성바이오로직스", code: "207940", sector: "바이오", per: 52.0, pbr: 7.5, roe: 15.0, div: 0, sales: "+25%", op: "+30%", why: "CDMO 수주 확대로 매출 +25% 지속 성장, 4공장 가동 효과." },
+      { name: "두산에너빌리티", code: "034020", sector: "원자력", per: 22.0, pbr: 2.4, roe: 13.0, div: 0.4, sales: "+20%", op: "흑자전환", why: "원전·가스터빈 수주 확대로 흑자전환, 매출 성장 가속." },
+    ],
+  },
+  {
+    key: "dividend", label: "고배당주", desc: "배당수익률이 높고 현금흐름이 안정적인 기업 (장기 적립식에 적합한 지표)",
+    items: [
+      { name: "우리금융지주", code: "316140", sector: "금융", per: 5.0, pbr: 0.40, roe: 8.8, div: 7.2, sales: "3년↑", op: "+6%", why: "배당수익률 7.2%로 최상위, PBR 0.4배. 분기배당 도입으로 현금흐름 안정." },
+      { name: "기업은행", code: "024110", sector: "금융", per: 5.2, pbr: 0.42, roe: 9.1, div: 6.8, sales: "3년↑", op: "+12%", why: "국책은행 안정성 + 배당수익률 6.8%. 저PER·고배당 동시 충족." },
+      { name: "하나금융지주", code: "086790", sector: "금융", per: 5.8, pbr: 0.48, roe: 9.0, div: 6.5, sales: "3년↑", op: "+8%", why: "주주환원 확대 정책으로 배당 6.5%, 자사주 소각 병행." },
+      { name: "SK텔레콤", code: "017670", sector: "통신", per: 10.5, pbr: 1.0, roe: 10.0, div: 6.1, sales: "유지", op: "+4%", why: "안정적 통신 현금흐름 기반 배당수익률 6.1%, 분기배당." },
+      { name: "KT&G", code: "033780", sector: "필수소비재", per: 11.3, pbr: 1.3, roe: 11.0, div: 5.2, sales: "3년↑", op: "+8%", why: "경기 방어적 사업 + 배당 5.2%. 자사주 매입·소각 지속." },
+    ],
+  },
+];
+
+const viewColor = (v: string) => v === "긍정" ? "var(--up)" : v === "부정" ? "var(--down)" : "var(--gold)";
+
+function MindMap({ score, outlook, sel, onSel }: { score: number; outlook: { name: string; view: string; note: string }[]; sel: string; onSel: (s: string) => void }) {
+  const cx = 200, cy = 200, R = 138, n = outlook.length;
+  const nodes = outlook.map((o, i) => { const a = (-90 + i * (360 / n)) * Math.PI / 180; return { ...o, x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) }; });
+  return (
+    <svg className="mindmap" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid meet">
+      {nodes.map(nd => <line key={nd.name + "l"} x1={cx} y1={cy} x2={nd.x} y2={nd.y} className={"mlink" + (sel === nd.name ? " on" : "")} />)}
+      <circle cx={cx} cy={cy} r={46} className="mcore" />
+      <text x={cx} y={cy - 6} className="mscore" textAnchor="middle">{score}</text>
+      <text x={cx} y={cy + 12} className="mcorel" textAnchor="middle">투자매력도</text>
+      <text x={cx} y={cy + 26} className="mcorel2" textAnchor="middle">시장 종합</text>
+      {nodes.map(nd => (
+        <g key={nd.name} onClick={() => onSel(nd.name)} style={{ cursor: "pointer" }}>
+          <circle cx={nd.x} cy={nd.y} r={30} fill={viewColor(nd.view)} className={"mnode" + (sel === nd.name ? " on" : "")} />
+          <text x={nd.x} y={nd.y - 1} className="mnt" textAnchor="middle">{nd.name}</text>
+          <text x={nd.x} y={nd.y + 12} className="mnv" textAnchor="middle">{nd.view}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
 function Page({ no, title, of, cls, style, children }: { no: string; title: string; of: string; cls: string; style: CSSProperties; children: ReactNode }) {
   return (
     <section className={"page " + cls} style={style}>
@@ -78,7 +174,10 @@ export default function Web({ b, live, openStock, openNews }: {
   const [markets, setMarkets] = useState<MItem[]>([]);
   const [nstocks, setNstocks] = useState<NStock[]>([]);
   const [asof, setAsof] = useState("");
-  const PAGES = 13;
+  const [sel, setSel] = useState("반도체");
+  const [cat, setCat] = useState("value");
+  const [scr, setScr] = useState(SCREENERS[0].items[0].name);
+  const PAGES = 15;
   const curRef = useRef(cur); curRef.current = cur;
 
   useEffect(() => {
@@ -148,6 +247,10 @@ export default function Web({ b, live, openStock, openNews }: {
   const scoreColor = score >= 58 ? "var(--up)" : score <= 42 ? "var(--down)" : "var(--gold)";
   const points = [...sectors].sort((a, b) => b.chg - a.chg).slice(0, 4).map(s => ({ t: `${s.name} ${s.chg >= 0 ? "자금 유입" : "차익 실현"}`, v: s.chg }));
   const oneLine = b.tldr || "밤사이 美 증시 강세 마감. 외국인 순매수 전환으로 우호적 출발이 예상됩니다.";
+  const nsBy = (nm: string) => NS.find(x => x.name === nm);
+  const selOutlook = SECTOR_OUTLOOK.find(o => o.name === sel) || SECTOR_OUTLOOK[0];
+  const curScr = SCREENERS.find(x => x.key === cat) || SCREENERS[0];
+  const selItem = curScr.items.find(x => x.name === scr) || curScr.items[0];
   const asofTxt = asof ? new Date(asof).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" }) + " 기준" : "실시간";
 
   const ixrows = (items: MItem[]) => items.length
@@ -159,7 +262,7 @@ export default function Web({ b, live, openStock, openNews }: {
   return (
     <>
       <div className="hud">
-        <span className="brand">DAWN</span><span className="kr">여명 · v15</span>
+        <span className="brand">DAWN</span><span className="kr">여명 · v18</span>
         <span className="date">{fmtDate()}</span>
         <span className="clk"><i style={{ opacity: live.ok ? 1 : 0.3 }} />{live.clock}</span>
       </div>
@@ -188,7 +291,7 @@ export default function Web({ b, live, openStock, openNews }: {
             <div style={{ fontFamily: "var(--mono)", fontWeight: 700, fontSize: "clamp(56px,11vw,84px)", lineHeight: 1, background: "var(--dawn)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>{score}</div>
             <div style={{ fontSize: 15, color: scoreColor, fontWeight: 600, marginTop: 10 }}>{scoreLabel}</div>
             <div className="seg" style={{ marginTop: 16, width: "100%" }}>{Array.from({ length: 10 }).map((_, i) => <i key={i} className={i < Math.round(score / 10) ? "on" : ""} />)}</div>
-            <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 10 }}>美 증시·환율·수급·변동성 종합 · 시장 전체 지표</div>
+            <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 10, lineHeight: 1.5 }}>🔰 점수가 높을수록 오늘 시장 분위기가 좋다는 뜻이에요.<br/>매수 신호가 아니라 <b style={{color:"var(--text2)"}}>전체 분위기 온도계</b>입니다.</div>
           </div>
           <div className="panel c7">
             <div className="pl"><span className="lvdot" />오늘 이건 보세요</div>
@@ -201,7 +304,26 @@ export default function Web({ b, live, openStock, openNews }: {
           </div>
         </Page>
 
-        <Page no="02" title="글로벌 마켓" of={`밤사이 美 종가 · ${asofTxt}`} cls={pcls(2)} style={pst(2)}>
+        <Page no="02" title="투자매력도 마인드맵" of="이슈·지수·섹터·종목 한눈에" cls={pcls(2)} style={pst(2)}>
+          <div className="panel c7" style={{ minHeight: 0 }}>
+            <div className="pl"><span className="lvdot" />오늘의 투자매력도 지도 <span className="rt">탭하면 섹터별 종목</span></div>
+            <MindMap score={score} outlook={SECTOR_OUTLOOK} sel={sel} onSel={setSel} />
+            <div className="mlegend"><span><i style={{ background: "var(--up)" }} />긍정</span><span><i style={{ background: "var(--gold)" }} />중립·관망</span><span><i style={{ background: "var(--down)" }} />부정</span></div>
+          </div>
+          <div className="panel c5 scroll">
+            <div className="pl">{sel} <span className={"vbadge " + (selOutlook.view === "긍정" ? "vp" : selOutlook.view === "부정" ? "vd" : "vm")} style={{ marginLeft: 8 }}>{selOutlook.view}</span></div>
+            <div className="vnote" style={{ marginBottom: 12 }}>{selOutlook.note}</div>
+            <div className="pl" style={{ fontSize: 11 }}>상위 · 관련 종목</div>
+            <table className="tbl"><tbody>
+              {(SECTOR_STOCKS[sel] || []).map((nm, i) => { const q = nsBy(nm); return (
+                <tr key={nm}><td className="no">{i + 1}</td><td className="nm">{nm}</td>
+                  <td>{q ? comma(q.price) : "—"}</td><td className={q ? cc(q.chg) : ""}>{q ? ar(q.chg) : "관련주"}</td></tr>); })}
+            </tbody></table>
+            <div className="rfine">※ 섹터 전망·종목 정보 제공용입니다. 개별 종목 매수·매도 권유가 아닙니다.</div>
+          </div>
+        </Page>
+
+        <Page no="03" title="글로벌 마켓" of={`밤사이 美 종가 · ${asofTxt}`} cls={pcls(3)} style={pst(3)}>
           <div className="panel c3"><div className="pl"><span className="lvdot" />국내 지수</div>{ixrows(kr)}</div>
           <div className="panel c3"><div className="pl">美 지수</div>{ixrows(us)}</div>
           <div className="panel c3"><div className="pl">아시아</div>{ixrows(asia)}</div>
@@ -215,7 +337,7 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c3"><div className="pl"><span className="lvdot" />위험 선호</div><div className="big"><span className="v">{temp}</span><span className="c" style={{ color: "var(--gold)" }}>{temp >= 65 ? "탐욕" : temp <= 35 ? "공포" : "중립"}</span></div><div className="seg">{Array.from({ length: 10 }).map((_, i) => <i key={i} className={i < Math.round(temp / 10) ? "on" : ""} />)}</div></div>
         </Page>
 
-        <Page no="03" title="매크로 지표" of={`금리·원자재·환율·코인 · ${asofTxt}`} cls={pcls(3)} style={pst(3)}>
+        <Page no="04" title="매크로 지표" of={`금리·원자재·환율·코인 · ${asofTxt}`} cls={pcls(4)} style={pst(4)}>
           <div className="panel c4"><div className="pl">금리 · 국채</div>{ixrows(rate)}</div>
           <div className="panel c4"><div className="pl">원자재</div>{ixrows(comm)}</div>
           <div className="panel c4"><div className="pl">변동성 · 달러</div>{ixrows(ind)}</div>
@@ -223,7 +345,7 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c8"><div className="pl">오늘의 한 줄</div><p className="tldrp">{b.tldr || "글로벌 지표를 수집하고 있습니다…"}</p></div>
         </Page>
 
-        <Page no="04" title="외국인·기관 수급" of="매매동향 · 억원" cls={pcls(4)} style={pst(4)}>
+        <Page no="05" title="외국인·기관 수급" of="매매동향 · 억원" cls={pcls(5)} style={pst(5)}>
           <div className="panel c6 scroll"><div className="pl"><span className="lvdot" />투자자별 순매수 (코스피)</div>
             <table className="tbl"><thead><tr><th>투자자</th><th>순매수</th></tr></thead><tbody>
               {SUPPLY.map(([nm,v,up])=>(<tr key={nm}><td className="nm">{nm}</td><td className={up?"u":"d"}>{(v>=0?"+":"")+v.toLocaleString("en-US")}</td></tr>))}
@@ -234,7 +356,7 @@ export default function Web({ b, live, openStock, openNews }: {
           </div>
         </Page>
 
-        <Page no="05" title="거래대금 상위" of="실시간 · 관찰용" cls={pcls(5)} style={pst(5)}>
+        <Page no="06" title="거래대금 상위" of="실시간 · 관찰용" cls={pcls(6)} style={pst(6)}>
           <div className="panel c12 scroll"><div className="pl"><span className="lvdot" />거래대금 상위 종목 <span className="rt">{asofTxt}</span></div>
             {NS.length ? (
               <table className="tbl"><thead><tr><th>#</th><th>종목</th><th>현재가</th><th>등락</th><th>거래대금</th><th>거래량</th><th>시총</th></tr></thead>
@@ -247,27 +369,25 @@ export default function Web({ b, live, openStock, openNews }: {
           </div>
         </Page>
 
-        <Page no="06" title="섹터 · 테마" of="강세 업종 · 자금 흐름" cls={pcls(6)} style={pst(6)}>
+        <Page no="07" title="섹터 · 테마" of="강세 업종 · 자금 흐름" cls={pcls(7)} style={pst(7)}>
           <div className="panel c6"><div className="pl"><span className="lvdot" />업종 등락</div>{sectors.map(s => <div className="ixr" key={s.name}><span className="n">{s.name}</span><span className={"c " + cc(s.chg)}>{ar(s.chg)}</span></div>)}</div>
-          <div className="panel c6"><div className="pl">섹터 자금 유출입</div>
-            <div className="bars">{sectors.slice(0,5).map(s => (<div className="bar" key={s.name}><span className="bn">{s.name}</span><div className="bt"><div className="bf" style={{width:Math.min(95,Math.abs(s.chg)*16+10)+"%",background:s.chg>=0?"var(--up)":"var(--down)"}} /></div><span className={"bv "+cc(s.chg)}>{(s.chg>=0?"+":"")+(s.chg*900|0)}억</span></div>))}</div>
+          <div className="panel c6 scroll"><div className="pl">섹터 전망 <span className="rt">업종 방향 · 종목추천 아님</span></div>
+            {SECTOR_OUTLOOK.map(o => (<div className="vrow" key={o.name}><div className="vh"><span className="vn">{o.name}</span><span className={"vbadge " + (o.view==="긍정"?"vp":o.view==="부정"?"vd":"vm")}>{o.view}</span></div><div className="vnote">{o.note}</div></div>))}
           </div>
         </Page>
 
-        <Page no="07" title="AI 뉴스 · 이슈" of="실시간 수집" cls={pcls(7)} style={pst(7)}>
-          <div className="panel c7 scroll"><div className="pl"><span className="lvdot" />실시간 뉴스</div>
-            <div className="nw">{news.length ? news.slice(0, 6).map(n => (
-              <div className="n" key={n.id} onClick={() => openNews(n)} style={{ cursor: "pointer" }}><span className="dotn" /><div><div className="tt">{n.title}</div><div className="mt">{n.source} · {n.ago}</div></div></div>
-            )) : <Soon txt="뉴스 연동 중… (네이버 검색)" />}</div>
+        <Page no="08" title="이슈 & 전망 리포트" of="시장 영향 이슈 · 주린이 쉽게" cls={pcls(8)} style={pst(8)}>
+          <div className="panel c6 scroll"><div className="pl"><span className="lvdot" />오늘의 시장 영향 이슈</div>
+            {SAMPLE_ISSUES.map((it, i) => (<div className="iss" key={i}><span className={"icat " + (it.impact==="긍정"?"u":it.impact==="부정"?"d":"")}>{it.cat}</span><span className="itt">{it.title}</span></div>))}
+            <div className="nw" style={{ marginTop: 12 }}>{news.slice(0, 3).map(n => (<div className="n" key={n.id} onClick={() => openNews(n)} style={{ cursor: "pointer" }}><span className="dotn" /><div><div className="tt">{n.title}</div><div className="mt">{n.source} · {n.ago}</div></div></div>))}</div>
           </div>
-          <div className="panel c5"><div className="pl">전략 시나리오</div><div className="strat">
-            <div className="s"><span className="b up">강세</span><p>{strat.up}</p></div>
-            <div className="s"><span className="b ob">관찰</span><p>{strat.ob}</p></div>
-            <div className="s"><span className="b dn">주의</span><p>{strat.dn}</p></div>
-          </div></div>
+          <div className="panel c6 scroll"><div className="pl">오늘의 전망 리포트 <span className="rt">🔰 쉽게 풀이</span></div>
+            <div className="report">{REPORT.map((r, i) => (<p key={i}>{r}</p>))}</div>
+            <div className="rfine">※ 시장 전체 전망 정보입니다. 특정 종목 매수·매도 권유가 아니며, 투자 판단과 책임은 본인에게 있습니다.</div>
+          </div>
         </Page>
 
-        <Page no="08" title="종목 심층 분석" of="차트·지표·수급" cls={pcls(8)} style={pst(8)}>
+        <Page no="09" title="종목 심층 분석" of="차트·지표·수급" cls={pcls(9)} style={pst(9)}>
           <div className="panel c8"><div className="pl"><span className="lvdot" />{NS[0].name} {NS[0].code}</div>
             <div className="big"><span className="v">{comma(NS[0].price)}</span><span className={"c "+cc(NS[0].chg)}>{ar(NS[0].chg)}</span><span className="rt" style={{marginLeft:"auto"}}>시총 {NS[0].marketcap}</span></div>
             <Spark data={[60,62,61,64,66,65,68,71]} up={true} />
@@ -293,19 +413,19 @@ export default function Web({ b, live, openStock, openNews }: {
           </div>
         </Page>
 
-        <Page no="09" title="일정 · 캘린더" of="실적·공시·지표" cls={pcls(9)} style={pst(9)}>
+        <Page no="10" title="일정 · 캘린더" of="실적·공시·지표" cls={pcls(10)} style={pst(10)}>
           <div className="panel c12 scroll"><div className="pl"><span className="lvdot" />오늘의 일정</div>
             <div className="cal">{CAL.map(([tm,ev])=>(<div className="ev" key={tm+ev}><span className="tm">{tm}</span><div><div className="ec">{ev}</div></div></div>))}</div>
           </div>
         </Page>
 
-        <Page no="10" title="글로벌 야간 동향" of="美 종가 · 아시아·유럽" cls={pcls(10)} style={pst(10)}>
+        <Page no="11" title="글로벌 야간 동향" of="美 종가 · 아시아·유럽" cls={pcls(11)} style={pst(11)}>
           <div className="panel c6"><div className="pl">美 지수</div>{ixrows(us)}</div>
           <div className="panel c6"><div className="pl">아시아 · 유럽</div>{ixrows([...asia, ...eu])}</div>
           <div className="panel c12"><div className="pl">밤사이 핵심</div><p className="tldrp">{b.tldr || "—"}</p></div>
         </Page>
 
-        <Page no="11" title="전략 · 체크리스트" of="시나리오 · 리스크" cls={pcls(11)} style={pst(11)}>
+        <Page no="12" title="전략 · 체크리스트" of="시나리오 · 리스크" cls={pcls(12)} style={pst(12)}>
           <div className="panel c6"><div className="pl">전략 시나리오</div><div className="strat">
             <div className="s"><span className="b up">강세</span><p>{strat.up}</p></div>
             <div className="s"><span className="b ob">관찰</span><p>{strat.ob}</p></div>
@@ -314,10 +434,36 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c6"><div className="pl">안내</div><p style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.55 }}><b style={{ color: "var(--cyan)" }}>투자 참고용 정보입니다.</b> 제공되는 종목·지표·뉴스는 정보 제공 목적이며, 최종 투자 판단과 책임은 본인에게 있습니다.</p></div>
         </Page>
 
-        <Page no="12" title="탐색기 · 백테스트" of="AI 스크리너" cls={pcls(12)} style={pst(12)}>
+        <Page no="13" title="탐색기 · 백테스트" of="AI 스크리너" cls={pcls(13)} style={pst(13)}>
           <div className="panel c12" style={{ alignItems: "center", justifyContent: "center" }}>
             <p className="tldrp" style={{ textAlign: "center", marginBottom: 16 }}>AI 종목 스크리너 · 매매기법 백테스트 검증</p>
             <a href="/finder" className="hero-cta" style={{ animation: "none", opacity: 1, textDecoration: "none" }}>탐색기 열기 →</a>
+          </div>
+        </Page>
+
+        <Page no="14" title="가치주 스크리너" of="객관적 재무지표 · 카테고리별" cls={pcls(14)} style={pst(14)}>
+          <div className="panel c12" style={{ flex: "0 0 auto" }}>
+            <div className="cattabs">{SCREENERS.map(sc => (<button key={sc.key} className={"cattab" + (cat === sc.key ? " on" : "")} onClick={() => { setCat(sc.key); setScr((SCREENERS.find(x => x.key === sc.key) || SCREENERS[0]).items[0].name); }}>{sc.label}</button>))}</div>
+            <div className="catdesc">{curScr.desc}</div>
+          </div>
+          <div className="panel c7 scroll">
+            <table className="tbl"><thead><tr><th>종목</th><th>PER</th><th>PBR</th><th>ROE</th><th>배당</th><th>매출</th></tr></thead>
+              <tbody>{curScr.items.map(it => (
+                <tr key={it.code} className={scr === it.name ? "selrow" : ""} onClick={() => setScr(it.name)} style={{ cursor: "pointer" }}>
+                  <td className="nm">{it.name}<div className="sub">{it.code} · {it.sector}</div></td>
+                  <td className="g">{it.per || "—"}</td><td>{it.pbr}</td><td>{it.roe}%</td><td className="u">{it.div}%</td><td className="u">{it.sales}</td>
+                </tr>))}</tbody></table>
+          </div>
+          <div className="panel c5 scroll">
+            <div className="pl"><span className="lvdot" />{selItem.name} <span className="rt">{selItem.code} · {selItem.sector}</span></div>
+            <div className="ixr"><span className="n">PER</span><span className="v g">{selItem.per || "—"}배</span></div>
+            <div className="ixr"><span className="n">PBR</span><span className="v">{selItem.pbr}배</span></div>
+            <div className="ixr"><span className="n">ROE</span><span className="v">{selItem.roe}%</span></div>
+            <div className="ixr"><span className="n">배당수익률</span><span className="v u">{selItem.div}%</span></div>
+            <div className="ixr"><span className="n">매출 추이</span><span className="v u">{selItem.sales}</span></div>
+            <div className="ixr"><span className="n">영업이익</span><span className="v u">{selItem.op}</span></div>
+            <p className="tldrp" style={{ marginTop: 10, fontSize: 13 }}>{selItem.why}</p>
+            <div className="rfine">※ 공시 기반 객관적 재무지표입니다. 투자매력 점수·매수/매도 권유가 아니며, 수치는 예시(데모)입니다.</div>
           </div>
         </Page>
       </div>
