@@ -177,12 +177,18 @@ export default function Web({ b, live, openStock, openNews }: {
   const [sel, setSel] = useState("반도체");
   const [cat, setCat] = useState("value");
   const [scr, setScr] = useState(SCREENERS[0].items[0].name);
+  const [kw, setKw] = useState("");
+  const [ana, setAna] = useState("");
+  const [anaErr, setAnaErr] = useState("");
+  const [anaLoading, setAnaLoading] = useState(false);
+  const [logs, setLogs] = useState<{ name?: string; rule?: string; period?: string; win?: string; ret?: string }[]>([]);
   const PAGES = 15;
   const curRef = useRef(cur); curRef.current = cur;
 
   useEffect(() => {
     fetch("/api/markets").then(r => r.json()).then(d => { setMarkets(d.data || []); if (d.asof) setAsof(d.asof); }).catch(() => {});
     fetch("/api/naver-stocks?limit=20").then(r => r.json()).then(d => setNstocks(d.stocks || [])).catch(() => {});
+    fetch("/api/finder-logs").then(r => r.json()).then(d => setLogs(d.logs || [])).catch(() => {});
   }, []);
 
   const go = (n: number) => {
@@ -259,10 +265,21 @@ export default function Web({ b, live, openStock, openNews }: {
 
   const openNStock = (s: NStock) => openStock({ rank: s.rank, name: s.name, market: s.market, code: s.code, price: s.price, chg: s.chg, turnover: s.turnover, volume: s.volume, pos52: "", note: "", reason: `거래대금 ${s.turnover} · 시총 ${s.marketcap}`, spark: [], pro: false, profile: [], forecast: { trend: "", up: "", down: "" } } as Stock);
 
+  const analyze = async () => {
+    if (!kw.trim() || anaLoading) return;
+    setAnaLoading(true); setAnaErr(""); setAna("");
+    try {
+      const r = await fetch("/api/finder-analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ keyword: kw.trim() }) });
+      const d = await r.json();
+      if (d.success) setAna(d.analysis); else setAnaErr(d.error || "분석 결과를 불러오지 못했습니다. (AI 키 미설정 시 데모로 표시)");
+    } catch { setAnaErr("네트워크 오류가 발생했습니다."); }
+    finally { setAnaLoading(false); }
+  };
+
   return (
     <>
       <div className="hud">
-        <span className="brand">DAWN</span><span className="kr">여명 · v18</span>
+        <span className="brand">DAWN</span><span className="kr">여명 · v19</span>
         <span className="date">{fmtDate()}</span>
         <span className="clk"><i style={{ opacity: live.ok ? 1 : 0.3 }} />{live.clock}</span>
       </div>
@@ -434,14 +451,28 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c6"><div className="pl">안내</div><p style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.55 }}><b style={{ color: "var(--cyan)" }}>투자 참고용 정보입니다.</b> 제공되는 종목·지표·뉴스는 정보 제공 목적이며, 최종 투자 판단과 책임은 본인에게 있습니다.</p></div>
         </Page>
 
-        <Page no="13" title="탐색기 · 백테스트" of="AI 스크리너" cls={pcls(13)} style={pst(13)}>
-          <div className="panel c12" style={{ alignItems: "center", justifyContent: "center" }}>
-            <p className="tldrp" style={{ textAlign: "center", marginBottom: 16 }}>AI 종목 스크리너 · 매매기법 백테스트 검증</p>
-            <a href="/finder" className="hero-cta" style={{ animation: "none", opacity: 1, textDecoration: "none" }}>탐색기 열기 →</a>
+        <Page no="14" title="탐색기 · 백테스트" of="AI 스크리너 · 매매기법 검증" cls={pcls(14)} style={pst(14)}>
+          <div className="panel c7 scroll">
+            <div className="pl"><span className="lvdot" />AI 종목 스크리너 <span className="rt">구글 검색 연동</span></div>
+            <p className="tldrp" style={{ fontSize: 13, marginBottom: 10 }}>종목명을 입력하면 최신 뉴스·수급·변동성을 검색해 관찰 포인트와 주의 요인을 정리합니다. 매수·매도 권유는 하지 않습니다.</p>
+            <div className="scform">
+              <input className="sinput" placeholder="예: 현대차, 셀트리온, SK하이닉스" value={kw} onChange={e => setKw(e.target.value)} onKeyDown={e => { if (e.key === "Enter") analyze(); }} />
+              <button className="sbtn" onClick={analyze} disabled={anaLoading || !kw.trim()}>{anaLoading ? "검색 중…" : "분석"}</button>
+            </div>
+            {anaErr && <div className="rfine" style={{ color: "var(--gold)" }}>{anaErr}</div>}
+            {ana && <div className="report" style={{ marginTop: 12 }}>{ana.split(/\n+/).map(l => l.replace(/\*\*/g, "").trim()).filter(Boolean).map((l, i) => <p key={i}>{l.replace(/^[-*\u2022]\s/, "")}</p>)}</div>}
+            {!ana && !anaErr && <div className="empty">종목명을 입력해 분석을 시작하세요</div>}
+          </div>
+          <div className="panel c5 scroll">
+            <div className="pl">매매기법 백테스트 검증</div>
+            {logs.length ? logs.map((lg, i) => (
+              <div className="vrow" key={i}><div className="vh"><span className="vn">{lg.name || lg.rule || ("전략 " + (i + 1))}</span><span className={"vbadge " + ((lg.ret || "").includes("-") ? "vd" : "vp")}>{lg.ret || "—"}</span></div><div className="vnote">{lg.period || ""}{lg.win ? " · 승률 " + lg.win : ""}</div></div>
+            )) : <div className="empty">백테스트 로그 연동 중…</div>}
+            <div className="rfine">※ 과거 성과는 미래 수익을 보장하지 않습니다. 참고용 검증 자료입니다.</div>
           </div>
         </Page>
 
-        <Page no="14" title="가치주 스크리너" of="객관적 재무지표 · 카테고리별" cls={pcls(14)} style={pst(14)}>
+        <Page no="13" title="가치주 스크리너" of="객관적 재무지표 · 카테고리별" cls={pcls(13)} style={pst(13)}>
           <div className="panel c12" style={{ flex: "0 0 auto" }}>
             <div className="cattabs">{SCREENERS.map(sc => (<button key={sc.key} className={"cattab" + (cat === sc.key ? " on" : "")} onClick={() => { setCat(sc.key); setScr((SCREENERS.find(x => x.key === sc.key) || SCREENERS[0]).items[0].name); }}>{sc.label}</button>))}</div>
             <div className="catdesc">{curScr.desc}</div>
