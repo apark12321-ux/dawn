@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { PriceModal, KakaoModal, StockModal, NewsModal } from "./components/Modals";
 import { fetchBriefing } from "./lib/api";
-import { getTrial } from "./lib/trial";
 import { useLive } from "./hooks/useLive";
 import { EMPTY } from "./lib/empty";
 import { Briefing, Stock, NewsItem } from "./lib/types";
@@ -18,7 +17,6 @@ export default function App() {
 function Briefingapp() {
   const [b, setB] = useState<Briefing>(EMPTY);
   const live = useLive();
-  const [trial] = useState(getTrial);
   const [modal, setModal] = useState<Modal>(null);
   const [toast, setToast] = useState("");
 
@@ -33,7 +31,7 @@ function Briefingapp() {
 
   return (
     <>
-      <Web b={b} live={live} trial={trial} openPrice={openPrice} openKakao={openKakao} openStock={openStock} openNews={openNews} />
+      <Web b={b} live={live} openPrice={openPrice} openKakao={openKakao} openStock={openStock} openNews={openNews} />
       {modal?.kind === "price" && <PriceModal onClose={close} />}
       {modal?.kind === "kakao" && <KakaoModal onClose={close} onDone={() => { close(); setToast("신청 완료 — 내일 06:30부터 카톡으로 받아요"); }} />}
       {modal?.kind === "stock" && <StockModal stock={modal.stock} onClose={close} />}
