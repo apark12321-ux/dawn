@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+/* ============================================================
+   모바일 하드닝 — 가로 넘침/찌그러짐 방지 (App.tsx 무수정)
+   ============================================================ */
+
+/* 1) 가로 스크롤(깨짐의 주범) 원천 차단 */
+html, body, #root { max-width: 100%; overflow-x: hidden; }
+
+/* 2) flex/grid 자식의 min-width:auto 때문에 내용이 안 줄어 넘치는 문제 해결 */
+*, *::before, *::after { min-width: 0; }
+
+/* 3) 미디어/차트가 컨테이너를 넘지 않게 */
+img, svg, canvas, video { max-width: 100%; height: auto; }
+
+/* 4) 긴 숫자·텍스트가 줄을 넘겨 깨지지 않게 */
+.font-mono { overflow-wrap: anywhere; }
+
+@media (max-width: 640px) {
+  /* 거대 디스플레이 폰트 모바일에서 축소 */
+  .text-7xl { font-size: 3.25rem; line-height: 1.04; }
+  .text-6xl { font-size: 2.75rem; line-height: 1.05; }
+  .text-5xl { font-size: 2.25rem; line-height: 1.08; }
+
+  /* 컨테이너 좌우 여백 살짝 축소(콘텐츠 공간 확보) */
+  .px-8 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .p-8 { padding: 1.25rem; }
+  .p-7 { padding: 1.15rem; }
+
+  /* 반응형 프리픽스 없는 데이터 그리드(4·5칸) 모바일서 글자 축소 → 안 넘침 */
+  .grid-cols-4:not([class*="md:grid-cols"]):not([class*="sm:grid-cols"]),
+  .grid-cols-5:not([class*="md:grid-cols"]):not([class*="sm:grid-cols"]) {
+    font-size: 0.72rem;
+  }
+
+  /* 큰 고정 높이 섹션 모바일서 과하지 않게 */
+  .h-\[600px\], .h-\[580px\] { height: 480px; }
+
+  /* 가로로 긴 표/패널은 스크롤 허용(잘림 대신) */
+  .overflow-x-auto { -webkit-overflow-scrolling: touch; }
+}
+
+/* 5) 아주 좁은 화면(≤380) 추가 보정 */
+@media (max-width: 380px) {
+  .text-7xl { font-size: 2.75rem; }
+  .text-6xl { font-size: 2.4rem; }
+  .gap-6 { gap: 1rem; }
+  .gap-4 { gap: 0.75rem; }
+}

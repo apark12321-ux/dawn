@@ -1,0 +1,6 @@
+{
+  "name": "DAWN · 여명",
+  "description": "한국 개인 투자자를 위한 pre-market(장전) 종합 브리핑 서비스. 시장 점수, 마인드맵, 거시경제 지표 및 AI 스크리너를 담은 초보/고수 모드 맞춤형 터미널.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
