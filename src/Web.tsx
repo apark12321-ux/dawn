@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { useEffect, useRef, useState, ReactNode, CSSProperties } from "react";
 import { Briefing, Stock, NewsItem } from "./lib/types";
 import { Live } from "./hooks/useLive";
 
@@ -18,12 +18,24 @@ function Spark({ data, up }: { data?: number[]; up: boolean }) {
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * 100},${34 - ((v - min) / r) * 30 - 2}`).join(" ");
   return <svg className="spark" viewBox="0 0 100 34" preserveAspectRatio="none"><polyline className={up ? "u" : "d"} points={pts} /></svg>;
 }
+const Soon = ({ txt }: { txt: string }) => <div className="empty" style={{ margin: "auto", padding: 24 }}>{txt}</div>;
+
+function Page({ no, title, of, cls, style, children }: { no: string; title: string; of: string; cls: string; style: CSSProperties; children: ReactNode }) {
+  return (
+    <section className={"page " + cls} style={style}>
+      <div className="sheen" />
+      <div className="dp">
+        <div className="dp-h"><span className="dp-no">{no}</span><span className="dp-t">{title}</span><span className="dp-of">{of}</span></div>
+        <div className="dp-grid">{children}</div>
+      </div>
+    </section>
+  );
+}
 
 export default function Web({ b, live, openStock, openNews }: {
   b: Briefing; live: Live;
   openPrice: () => void; openKakao: () => void; openStock: (s: Stock) => void; openNews: (n: NewsItem) => void;
 }) {
-  const pageRefs = useRef<(HTMLElement | null)[]>([]);
   const [cur, setCur] = useState(0);
   const busy = useRef(false);
   const cvRef = useRef<HTMLCanvasElement | null>(null);
@@ -39,17 +51,12 @@ export default function Web({ b, live, openStock, openNews }: {
   }, []);
 
   const go = (n: number) => {
-    if (busy.current) return; n = Math.max(0, Math.min(PAGES - 1, n)); if (n === cur) return;
-    busy.current = true; const fwd = n > cur; const ps = pageRefs.current;
-    if (fwd) { const p = ps[cur]; if (p) { p.classList.add("turning"); requestAnimationFrame(() => { p.classList.remove("stack"); p.classList.add("turned"); }); setTimeout(() => p.classList.remove("turning"), 800); } }
-    else { const p = ps[n]; if (p) { p.classList.add("turning"); p.classList.remove("turned"); requestAnimationFrame(() => p.classList.add("stack")); setTimeout(() => p.classList.remove("turning"), 800); } }
-    setCur(n); setTimeout(() => (busy.current = false), 820);
+    if (busy.current) return; n = Math.max(0, Math.min(PAGES - 1, n)); if (n === curRef.current) return;
+    busy.current = true; setCur(n); setTimeout(() => (busy.current = false), 820);
   };
   const goRef = useRef(go); goRef.current = go;
 
   useEffect(() => {
-    const ps = pageRefs.current;
-    ps.forEach((p, i) => { if (!p) return; p.style.zIndex = String(PAGES - i); if (i > 0) p.classList.add("stack"); });
     const key = (e: KeyboardEvent) => { if (e.key === "ArrowRight") goRef.current(curRef.current + 1); if (e.key === "ArrowLeft") goRef.current(curRef.current - 1); };
     let wl = 0; const wheel = (e: WheelEvent) => { const t = Date.now(); if (t - wl < 900) return; if (Math.abs(e.deltaY) < 18) return; wl = t; goRef.current(curRef.current + (e.deltaY > 0 ? 1 : -1)); };
     window.addEventListener("keydown", key); window.addEventListener("wheel", wheel, { passive: true });
@@ -84,7 +91,10 @@ export default function Web({ b, live, openStock, openNews }: {
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
 
-  const setRef = (i: number) => (el: HTMLElement | null) => { pageRefs.current[i] = el; };
+  // 페이지 전환 = React 상태 기반 (다시 그려도 안 깨짐)
+  const pcls = (i: number) => (i < cur ? "turned" : "stack");
+  const pst = (i: number): CSSProperties => ({ zIndex: PAGES - i });
+
   const grp = (g: string) => markets.filter(m => m.group === g);
   const kr = grp("국내").length ? grp("국내") : (b.krIndices || []).map(k => ({ name: k.name, group: "국내", unit: "", level: k.level, chg: k.chg } as MItem));
   const us = grp("미국"), asia = grp("아시아"), eu = grp("유럽"), rate = grp("금리"), comm = grp("원자재"), ind = grp("지표");
@@ -98,24 +108,17 @@ export default function Web({ b, live, openStock, openNews }: {
 
   const openNStock = (s: NStock) => openStock({ rank: s.rank, name: s.name, market: s.market, code: s.code, price: s.price, chg: s.chg, turnover: s.turnover, volume: s.volume, pos52: "", note: "", reason: `거래대금 ${s.turnover} · 시총 ${s.marketcap}`, spark: [], pro: false, profile: [], forecast: { trend: "", up: "", down: "" } } as Stock);
 
-  const Page = ({ i, no, title, of, children }: { i: number; no: string; title: string; of: string; children: ReactNode }) => (
-    <section className="page" ref={setRef(i)}><div className="sheen" /><div className="dp">
-      <div className="dp-h"><span className="dp-no">{no}</span><span className="dp-t">{title}</span><span className="dp-of">{of}</span></div>
-      <div className="dp-grid">{children}</div></div></section>
-  );
-  const Soon = ({ txt }: { txt: string }) => <div className="empty" style={{ margin: "auto", padding: 24 }}>{txt}</div>;
-
   return (
     <>
       <div className="hud">
-        <span className="brand">DAWN</span><span className="kr">여명</span>
+        <span className="brand">DAWN</span><span className="kr">여명 · v12</span>
         <span className="date">{fmtDate()}</span>
         <span className="clk"><i style={{ opacity: live.ok ? 1 : 0.3 }} />{live.clock}</span>
       </div>
 
       <div id="dawnbook">
         {/* 0 LANDING */}
-        <section className="page stack" ref={setRef(0)}>
+        <section className={"page " + pcls(0)} style={pst(0)}>
           <div className="sheen" /><canvas ref={cvRef} className="lcv" />
           <div className="hero-c">
             <div className="hero-tag">PRE-MARKET INTELLIGENCE</div>
@@ -125,14 +128,13 @@ export default function Web({ b, live, openStock, openNews }: {
           </div>
           <div className="hero-hint">페이지를 <b>넘겨</b> 12개 브리핑으로 · 클릭 / → / 스크롤</div>
           <div className="tickwrap"><div className="tickrow">
-            {[...kr, ...us].map((m, i) => (
-              <span className="tk" key={i}><b>{m.name}</b> {m.level ? comma(m.level) : live.krw} {m.chg !== 0 && <span className={cc(m.chg)}>{(m.chg >= 0 ? "+" : "") + m.chg.toFixed(2)}%</span>}</span>
-            ))}
+            {[...kr, ...us].map((m, i) => (<span className="tk" key={i}><b>{m.name}</b> {comma(m.level)} {m.chg !== 0 && <span className={cc(m.chg)}>{(m.chg >= 0 ? "+" : "") + m.chg.toFixed(2)}%</span>}</span>))}
+            <span className="tk"><b>USD/KRW</b> {live.krw}</span>
             <span className="tk"><b>BTC</b> {live.btc} {live.btcChg != null && <span className={cc(live.btcChg)}>{(live.btcChg >= 0 ? "+" : "") + live.btcChg.toFixed(2)}%</span>}</span>
           </div></div>
         </section>
 
-        <Page i={1} no="01" title="글로벌 마켓" of={`밤사이 美 종가 · ${asofTxt}`}>
+        <Page no="01" title="글로벌 마켓" of={`밤사이 美 종가 · ${asofTxt}`} cls={pcls(1)} style={pst(1)}>
           <div className="panel c3"><div className="pl"><span className="lvdot" />국내 지수</div>{ixrows(kr)}</div>
           <div className="panel c3"><div className="pl">美 지수</div>{ixrows(us)}</div>
           <div className="panel c3"><div className="pl">아시아</div>{ixrows(asia)}</div>
@@ -146,7 +148,7 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c3"><div className="pl"><span className="lvdot" />위험 선호</div><div className="big"><span className="v">{temp}</span><span className="c" style={{ color: "var(--gold)" }}>{temp >= 65 ? "탐욕" : temp <= 35 ? "공포" : "중립"}</span></div><div className="seg">{Array.from({ length: 10 }).map((_, i) => <i key={i} className={i < Math.round(temp / 10) ? "on" : ""} />)}</div></div>
         </Page>
 
-        <Page i={2} no="02" title="매크로 지표" of={`금리·원자재·환율·코인 · ${asofTxt}`}>
+        <Page no="02" title="매크로 지표" of={`금리·원자재·환율·코인 · ${asofTxt}`} cls={pcls(2)} style={pst(2)}>
           <div className="panel c4"><div className="pl">금리 · 국채</div>{ixrows(rate)}</div>
           <div className="panel c4"><div className="pl">원자재</div>{ixrows(comm)}</div>
           <div className="panel c4"><div className="pl">변동성 · 달러</div>{ixrows(ind)}</div>
@@ -154,11 +156,11 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c8"><div className="pl">오늘의 한 줄</div><p className="tldrp">{b.tldr || "글로벌 지표를 수집하고 있습니다…"}</p></div>
         </Page>
 
-        <Page i={3} no="03" title="외국인·기관 수급" of="매매동향 · 순매수/도">
-          <div className="panel c12"><Soon txt="투자자별 수급 데이터 연동 예정 (네이버 증권 수급 API)" /></div>
+        <Page no="03" title="외국인·기관 수급" of="매매동향" cls={pcls(3)} style={pst(3)}>
+          <div className="panel c12"><Soon txt="투자자별 수급 데이터 연동 예정 (네이버 증권)" /></div>
         </Page>
 
-        <Page i={4} no="04" title="거래대금 상위" of="실시간 · 관찰용">
+        <Page no="04" title="거래대금 상위" of="실시간 · 관찰용" cls={pcls(4)} style={pst(4)}>
           <div className="panel c12 scroll"><div className="pl"><span className="lvdot" />거래대금 상위 종목 <span className="rt">{asofTxt}</span></div>
             {nstocks.length ? (
               <table className="tbl"><thead><tr><th>#</th><th>종목</th><th>현재가</th><th>등락</th><th>거래대금</th><th>거래량</th><th>시총</th></tr></thead>
@@ -171,11 +173,11 @@ export default function Web({ b, live, openStock, openNews }: {
           </div>
         </Page>
 
-        <Page i={5} no="05" title="섹터 · 테마" of="자금 흐름">
+        <Page no="05" title="섹터 · 테마" of="자금 흐름" cls={pcls(5)} style={pst(5)}>
           <div className="panel c12">{(b.sectors && b.sectors.length) ? b.sectors.map(s => <div className="ixr" key={s.name}><span className="n">{s.name}</span><span className={"c " + cc(s.chg)}>{ar(s.chg)}</span></div>) : <Soon txt="섹터·테마 데이터 연동 예정" />}</div>
         </Page>
 
-        <Page i={6} no="06" title="AI 뉴스 · 이슈" of="실시간 수집">
+        <Page no="06" title="AI 뉴스 · 이슈" of="실시간 수집" cls={pcls(6)} style={pst(6)}>
           <div className="panel c7 scroll"><div className="pl"><span className="lvdot" />실시간 뉴스</div>
             <div className="nw">{news.length ? news.slice(0, 6).map(n => (
               <div className="n" key={n.id} onClick={() => openNews(n)} style={{ cursor: "pointer" }}><span className="dotn" /><div><div className="tt">{n.title}</div><div className="mt">{n.source} · {n.ago}</div></div></div>
@@ -188,21 +190,21 @@ export default function Web({ b, live, openStock, openNews }: {
           </div></div>
         </Page>
 
-        <Page i={7} no="07" title="종목 심층 분석" of="차트·매물대·지표">
-          <div className="panel c12"><Soon txt="종목 선택 시 차트·매물대·4지표·수급 분석 (거래대금 페이지에서 종목 탭)" /></div>
+        <Page no="07" title="종목 심층 분석" of="차트·매물대·지표" cls={pcls(7)} style={pst(7)}>
+          <div className="panel c12"><Soon txt="거래대금 페이지에서 종목을 탭하면 상세 분석이 열립니다" /></div>
         </Page>
 
-        <Page i={8} no="08" title="일정 · 캘린더" of="실적·공시·지표">
+        <Page no="08" title="일정 · 캘린더" of="실적·공시·지표" cls={pcls(8)} style={pst(8)}>
           <div className="panel c12"><Soon txt="실적·공시·경제지표 캘린더 연동 예정" /></div>
         </Page>
 
-        <Page i={9} no="09" title="글로벌 야간 동향" of="美 종가 · 선물">
-          <div className="panel c6"><div className="pl">美 지수 (전일)</div>{ixrows(us)}</div>
-          <div className="panel c6"><div className="pl">아시아·유럽</div>{ixrows([...asia, ...eu])}</div>
+        <Page no="09" title="글로벌 야간 동향" of="美 종가 · 아시아·유럽" cls={pcls(9)} style={pst(9)}>
+          <div className="panel c6"><div className="pl">美 지수</div>{ixrows(us)}</div>
+          <div className="panel c6"><div className="pl">아시아 · 유럽</div>{ixrows([...asia, ...eu])}</div>
           <div className="panel c12"><div className="pl">밤사이 핵심</div><p className="tldrp">{b.tldr || "—"}</p></div>
         </Page>
 
-        <Page i={10} no="10" title="전략 · 체크리스트" of="시나리오 · 리스크">
+        <Page no="10" title="전략 · 체크리스트" of="시나리오 · 리스크" cls={pcls(10)} style={pst(10)}>
           <div className="panel c6"><div className="pl">전략 시나리오</div><div className="strat">
             <div className="s"><span className="b up">강세</span><p>{b.strategy?.up || "—"}</p></div>
             <div className="s"><span className="b ob">관찰</span><p>{b.strategy?.ob || "—"}</p></div>
@@ -211,7 +213,7 @@ export default function Web({ b, live, openStock, openNews }: {
           <div className="panel c6"><div className="pl">안내</div><p style={{ fontSize: 12, color: "var(--text2)", lineHeight: 1.55 }}><b style={{ color: "var(--cyan)" }}>투자 참고용 정보입니다.</b> 제공되는 종목·지표·뉴스는 정보 제공 목적이며, 최종 투자 판단과 책임은 본인에게 있습니다.</p></div>
         </Page>
 
-        <Page i={11} no="11" title="탐색기 · 백테스트" of="AI 스크리너">
+        <Page no="11" title="탐색기 · 백테스트" of="AI 스크리너" cls={pcls(11)} style={pst(11)}>
           <div className="panel c12" style={{ alignItems: "center", justifyContent: "center" }}>
             <p className="tldrp" style={{ textAlign: "center", marginBottom: 16 }}>AI 종목 스크리너 · 매매기법 백테스트 검증</p>
             <a href="/finder" className="hero-cta" style={{ animation: "none", opacity: 1, textDecoration: "none" }}>탐색기 열기 →</a>
