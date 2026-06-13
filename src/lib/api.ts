@@ -28,12 +28,14 @@ export async function fetchBriefing(): Promise<Briefing> {
   try { const j = await jget("/api/briefing"); if (j && !j.error) base = { ...EMPTY, ...j }; } catch { /* ignore */ }
 
   // 2) 작동 소스 직접 수신 — briefing 생사와 무관하게 항상 채움
-  const [kr, us] = await Promise.all([
+  const [kr, us, news] = await Promise.all([
     jget("/api/kr-indices").then(d => d?.data || []).catch(() => []),
     jget("/api/us-indices").then(d => Array.isArray(d) ? d : []).catch(() => []),
+    jget("/api/news?q=" + encodeURIComponent("코스피 증시")).then(d => d?.news || []).catch(() => []),
   ]);
   if (kr.length) base.krIndices = kr;
   if (us.length) base.usIndices = us;
+  if (news.length) base.news = news;
   if (!base.tldr) base.tldr = composeTldr(base.usIndices || [], base.krIndices || []);
 
   return base;
