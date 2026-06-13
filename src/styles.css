@@ -675,3 +675,48 @@ body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opa
 .ixr .n{font-size:13.5px!important}.ixr .v{font-size:14px!important}
 .tbl{min-width:580px}
 }
+
+/* === 탐색기 분석 출력 — 일정한 줄간격 === */
+.fp-aout .fp-atext{margin-top:14px}
+.fp-atext p{font-size:14px;line-height:1.75;color:var(--text);margin:0 0 10px}
+.fp-atext p:last-child{margin-bottom:0}
+.fp-atext p.li{position:relative;padding-left:16px}
+.fp-atext p.li::before{content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;border-radius:50%;background:var(--cyan)}
+.fp-reason{margin-top:10px!important;line-height:1.6!important}
+.fp-card{display:flex;flex-direction:column}
+.fp-chg{margin-top:6px!important;margin-bottom:2px!important}
+
+/* === 모바일 최적화 (최종, 우선 적용) === */
+@media(max-width:768px){
+  .hud{flex-wrap:wrap;gap:6px 10px;padding:8px 12px}
+  .hud .date{display:none}
+  .hud .brand{font-size:16px!important}.hud .kr{font-size:11px!important}.hud .clk{font-size:11px!important;margin-left:auto}
+  #dawnbook{perspective:1600px}
+  .dp{padding:54px 12px 84px!important}
+  .dp-h{flex-wrap:wrap;gap:4px 8px}
+  .dp-t{font-size:19px!important}.dp-no{font-size:13px!important}.dp-of{font-size:10.5px!important;flex-basis:100%}
+  .panel{padding:13px!important;border-radius:13px}
+  .ixr{padding:7px 0!important}
+  .ixr .n{font-size:13.5px!important}.ixr .v{font-size:14px!important}.ixr .c{font-size:13px!important;min-width:58px!important}
+  .big .v{font-size:27px!important}
+  .tldrp{font-size:14px!important;line-height:1.65!important}
+  /* 오늘의 한 장: 점수 크게, 풀폭 */
+  .page .panel[style*="center"]{order:-1}
+  /* 책장 넘김 데스크탑 느낌 유지하되 모바일은 슬라이드처럼 */
+  .bk-nav{bottom:14px}
+  .tbl{min-width:0!important;width:100%}
+  .tbl th:nth-child(7),.tbl td:nth-child(7){display:none}
+  .tbl th:nth-child(6),.tbl td:nth-child(6){display:none}
+  .tbl td{font-size:13px!important;padding:8px 5px!important}
+  .tbl td.nm{font-size:14px!important;white-space:normal}
+  .bars .bar .bn{width:54px!important;font-size:12px!important}
+  /* 탐색기 */
+  .fp-grid{grid-template-columns:1fr!important}
+  .fp-ai{padding:18px!important}
+  .fp-atext p{font-size:13.5px!important;line-height:1.7!important}
+  .fp-h,.fp-aih{font-size:17px!important}
+}
+@media(max-width:768px) and (orientation:landscape){
+  .dp-grid{display:grid!important;grid-template-columns:repeat(2,1fr)!important}
+  .dp-grid>.panel{grid-column:auto!important}
+}

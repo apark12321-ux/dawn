@@ -159,7 +159,7 @@ export default function Web({ b, live, openStock, openNews }: {
   return (
     <>
       <div className="hud">
-        <span className="brand">DAWN</span><span className="kr">여명 · v14</span>
+        <span className="brand">DAWN</span><span className="kr">여명 · v15</span>
         <span className="date">{fmtDate()}</span>
         <span className="clk"><i style={{ opacity: live.ok ? 1 : 0.3 }} />{live.clock}</span>
       </div>

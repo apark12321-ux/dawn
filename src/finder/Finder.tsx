@@ -87,7 +87,12 @@ export default function Finder() {
           {analysis && (
             <div className="fp-aout">
               <div className="fp-aouth"><span className="fp-ping" />Google Search Grounding 분석</div>
-              <p>{analysis}</p>
+              <div className="fp-atext">{
+                analysis.split(/\n+/).map(l => l.replace(/\*\*/g, "").trim()).filter(Boolean).map((l, i) => {
+                  const isLi = /^[-*•]\s/.test(l);
+                  return <p className={isLi ? "li" : ""} key={i}>{isLi ? l.replace(/^[-*•]\s/, "") : l}</p>;
+                })
+              }</div>
               <div className="fp-fine">* 실시간 웹 정보 기반 관찰 자료입니다. 투자 판단의 보증이 아니며 참고용입니다.</div>
             </div>
           )}
