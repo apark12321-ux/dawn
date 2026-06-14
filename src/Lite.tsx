@@ -37,7 +37,18 @@ const SAMPLE_CHART: NStock[] = [
   { rank: 5, name: "에코프로비엠", code: "247540", market: "코스닥", price: 184000, chg: -3.7, volume: "210만", turnover: "2,870억", marketcap: "18조", up: false },
   { rank: 6, name: "현대차", code: "005380", market: "코스피", price: 246500, chg: 1.2, volume: "160만", turnover: "3,610억", marketcap: "51조", up: true },
 ];
-const FLOW_TABS = [["turnover", "거래대금"], ["volume", "거래량"], ["up", "급상승"], ["down", "급하락"]];
+const FLOW_TABS = [["turnover", "거래대금"], ["volume", "거래량"], ["up", "급상승"], ["down", "급하락"], ["pop", "인기"]];
+const EARNINGS = [
+  { name: "카맥스", tk: "KMX", logo: "#1B4DDB", when: "17일 21:00", q: "주요기업" },
+  { name: "자빌", tk: "JBL", logo: "#2B2F36", when: "17일 21:30", q: "주요기업" },
+  { name: "엔비디아", tk: "NVDA", logo: "#76B900", when: "26일 06:00", q: "관심급증" },
+  { name: "마이크론", tk: "MU", logo: "#0A4E9B", when: "27일 21:00", q: "반도체" },
+];
+const REPORTS = [
+  { t: "스페이스X, 어떤 종목이지? 핵심만", tag: "지금 뜨는 이슈", c: "#1E2633" },
+  { t: "2026 북중미 월드컵, 투자 아이디어는?", tag: "지금 뜨는 이슈", c: "#0E7C42" },
+  { t: "외국인 순매수 전환, 무엇을 담았나", tag: "리서치센터", c: "#7A1F2B" },
+];
 const SECTORS = [
   { name: "반도체", chg: 5.8, view: "긍정" }, { name: "바이오", chg: 4.2, view: "긍정" },
   { name: "방산", chg: 3.1, view: "긍정" }, { name: "2차전지", chg: -1.4, view: "관망" },
@@ -126,7 +137,7 @@ export default function Lite({ b, live, onPro, pro = false, openStock, openNews 
       <main className="dl-main">
         {tab === "today" && <>
           <div className="dl-today">
-            <div className="dl-greet">{now.getMonth() + 1}월 {now.getDate()}일 {wd[now.getDay()]} · 장 열리기 전 · v27</div>
+            <div className="dl-greet">{now.getMonth() + 1}월 {now.getDate()}일 {wd[now.getDay()]} · 장 열리기 전 · v28</div>
             <div className="dl-scrow"><div className="dl-scnum">{score}</div><div className="dl-scmood">오늘 시장은<br />{mood}</div></div>
             <div className="dl-scbar"><i style={{ width: score + "%" }} /></div>
             <p className="dl-lede">밤사이 미국 증시가 올랐어요. 보통 미국이 오르면 우리 시장도 기분 좋게 출발하는 경우가 많아요. 🌊</p>
@@ -136,7 +147,10 @@ export default function Lite({ b, live, onPro, pro = false, openStock, openNews 
             <div className="dl-card2">{SIGNALS.map((s, i) => <div className="dl-sig" key={i}><span className="dl-flag">{s.flag}</span><div className="dl-sigb"><div className="dl-sigt">{s.tk}</div><div className="dl-sigr">{s.reason}</div></div><span className={"dl-badge " + cc(s.chg)}>{sgn(s.chg)}</span></div>)}</div>
           </Sec>
           <Sec t="오늘의 전망 리포트" sub="🔰 쉽게 풀이">
-            <div className="dl-report">{REPORT.map((r, i) => <p key={i}>{r}</p>)}</div>
+            <div className="dl-report">
+              <p className="dl-rlead">오늘 아침, <mark>밤사이 미국이 오르고 외국인이 돌아왔어요.</mark> 출발은 우호적입니다.</p>
+              {REPORT.map((r, i) => <p key={i}>{r}</p>)}
+            </div>
           </Sec>
         </>}
 
@@ -169,6 +183,11 @@ export default function Lite({ b, live, onPro, pro = false, openStock, openNews 
         </>}
 
         {tab === "cal" && <>
+          <Sec t="다가오는 어닝콜" sub="실적 발표 모아보기">
+            <div className="dl-ecards">{EARNINGS.map(e => (
+              <div className="dl-ecard" key={e.tk}><span className="dl-elogo" style={{ background: e.logo }}>{e.tk[0]}</span><div className="dl-en">{e.name}</div><div className="dl-eq">{e.q}</div><div className="dl-edate">{e.when}</div></div>
+            ))}</div>
+          </Sec>
           <Sec t="오늘 일정 · 캘린더">
             <div className="dl-card2">{CAL.map((c, i) => <div className="dl-cev" key={i}><div className="dl-cwhen"><b>{c.d}</b><span>{c.t}</span></div><div className="dl-cb">{c.ev}</div><span className="dl-ctag">{c.tag}</span></div>)}</div>
           </Sec>
@@ -182,6 +201,11 @@ export default function Lite({ b, live, onPro, pro = false, openStock, openNews 
         </>}
 
         {tab === "more" && <>
+          <Sec t="리서치 리포트" sub="에디터가 쉽게 풀이">
+            <div className="dl-rcards">{REPORTS.map((r, i) => (
+              <div className="dl-rcard" key={i}><div className="dl-rthumb" style={{ background: r.c }}>📑</div><div className="dl-rb"><div className="dl-rtt">{r.t}</div><div className="dl-rtag">📈 {r.tag}</div></div></div>
+            ))}</div>
+          </Sec>
           <Sec t="지금 이슈" sub="시장 영향 뉴스">
             <div className="dl-card2">{news.slice(0, pro ? 8 : 5).map(n => <div className="dl-nrow" key={n.id} onClick={() => openNews(n)}><div className="dl-ntt">{n.title}</div><div className="dl-nmt">{n.source} · {n.ago}</div></div>)}</div>
           </Sec>
