@@ -27,7 +27,6 @@ function Splash({ onDone }: { onDone: () => void }) {
         <div className="splash-kr">여명 · 黎明</div>
         <div className="splash-slogan">장이 열리기 전, 가장 먼저 시장을 읽다.</div>
       </div>
-      <div className="splash-by">에이브로 · AVRO</div>
     </div>
   );
 }
@@ -69,7 +68,7 @@ function Briefingapp() {
   const [mode, setMode] = useState<Mode>(null);
   const [splash, setSplash] = useState(true);
 
-  useEffect(() => { const t = setTimeout(() => setSplash(false), 2400); return () => clearTimeout(t); }, []);
+  useEffect(() => { const t = setTimeout(() => setSplash(false), 4200); return () => clearTimeout(t); }, []);
 
   useEffect(() => { fetchBriefing().then(setB).catch(() => {}); }, []);
   useEffect(() => { if (!toast) return; const t = setTimeout(() => setToast(""), 2800); return () => clearTimeout(t); }, [toast]);
