@@ -1079,3 +1079,43 @@ html,body{overflow-x:hidden!important;overflow-y:auto!important;height:auto!impo
   .dl-idx span:nth-child(3){display:none}
   .dl-spark{display:none}
 }
+
+/* ============================================================
+   초보(확장) — 공용 카드/행/바/뱃지
+   ============================================================ */
+.dl-pill{font-family:var(--mono);font-style:normal;font-size:9px;font-weight:800;letter-spacing:.1em;color:#fff;background:var(--accent);padding:2px 6px;border-radius:6px;margin-left:8px;vertical-align:middle}
+.dl-card2{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 2px 14px rgba(10,60,75,.05)}
+.dl-irow{display:flex;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--line)}
+.dl-irow:first-child{border-top:none}
+.dl-in{flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--text);display:flex;flex-direction:column}
+.dl-in em{font-style:normal;font-size:11.5px;font-weight:500;color:var(--muted);margin-top:2px}
+.dl-iv{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text)}
+.dl-iv.u{color:var(--up)}.dl-iv.d{color:var(--down)}
+
+/* 전망 리포트 */
+.dl-report{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:6px 16px;box-shadow:0 2px 14px rgba(10,60,75,.05)}
+.dl-report p{position:relative;padding:14px 0 14px 18px;border-top:1px solid var(--line);font-size:14.5px;line-height:1.7;color:var(--text)}
+.dl-report p:first-child{border-top:none}
+.dl-report p::before{content:"";position:absolute;left:0;top:19px;width:7px;height:7px;border-radius:50%;background:var(--accent)}
+
+/* 섹터 바 차트 */
+.dl-secbars{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 2px 14px rgba(10,60,75,.05)}
+.dl-bar{display:flex;align-items:center;gap:10px;padding:7px 0}
+.dl-barn{flex:0 0 64px;font-size:13.5px;font-weight:700;color:var(--text)}
+.dl-bart{flex:1;height:9px;border-radius:6px;background:var(--chip);overflow:hidden}
+.dl-bart i{display:block;height:100%;border-radius:6px}
+.dl-bart i.u{background:var(--up)}.dl-bart i.d{background:var(--down)}
+.dl-barv{flex:0 0 auto;font-family:var(--mono);font-size:12.5px;font-weight:700}
+.dl-barv.u{color:var(--up)}.dl-barv.d{color:var(--down)}
+
+/* 업종 전망 뱃지 */
+.dl-vb{font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:9px}
+.dl-vb.vp{color:var(--up);background:color-mix(in srgb,var(--up) 12%,transparent)}
+.dl-vb.vm{color:#C98A00;background:rgba(240,180,0,.14)}
+.dl-vb.vn{color:var(--text2);background:var(--chip)}
+.dl-sub2{font-style:normal;font-size:11.5px;font-weight:500;color:var(--muted);margin-top:2px}
+
+/* 더보기 액션 */
+.dl-mrow{width:100%;text-align:left;padding:15px 16px;border-top:1px solid var(--line);background:none;border-left:none;border-right:none;border-bottom:none;font-size:15px;font-weight:700;color:var(--text);cursor:pointer}
+.dl-mrow:first-child{border-top:none}
+.dl-finder{display:block;text-align:center;padding:16px;border-radius:16px;background:color-mix(in srgb,var(--accent) 10%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 26%,transparent);color:var(--accent2);font-size:14.5px;font-weight:800;text-decoration:none}

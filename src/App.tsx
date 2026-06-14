@@ -84,7 +84,7 @@ function Briefingapp() {
       {splash && <Splash onDone={() => setSplash(false)} />}
       {!splash && mode === null && <ModeGate onPick={setMode} />}
       {!splash && mode === "lite" && <Lite b={b} live={live} onPro={() => setMode("pro")} openStock={openStock} openNews={openNews} />}
-      {!splash && mode === "pro" && <Web b={b} live={live} onLite={() => setMode("lite")} openPrice={openPrice} openKakao={openKakao} openStock={openStock} openNews={openNews} />}
+      {!splash && mode === "pro" && <Lite b={b} live={live} pro onPro={() => setMode("lite")} openStock={openStock} openNews={openNews} />}
       {modal?.kind === "price" && <PriceModal onClose={close} />}
       {modal?.kind === "kakao" && <KakaoModal onClose={close} onDone={() => { close(); setToast("신청 완료 — 내일 06:30부터 카톡으로 받아요"); }} />}
       {modal?.kind === "stock" && <StockModal stock={modal.stock} onClose={close} />}
