@@ -931,3 +931,99 @@ body::after{content:"";position:fixed;inset:0;z-index:60;pointer-events:none;opa
 @keyframes splashUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes splashOut{to{opacity:0;visibility:hidden}}
 @media(prefers-reduced-motion:reduce){.splash,.splash-sun,.splash-in,.splash-by{animation-duration:.01s}}
+
+/* ============================================================
+   고수 모드 라이트(네이버) 테마 — 책장넘김 본문만 밝게
+   (스플래시·모드선택은 다크 유지)
+   ============================================================ */
+.hud{background:#fff!important;border-bottom:1px solid #EAF1ED!important;box-shadow:0 1px 8px rgba(20,40,30,.04)}
+.hud .brand{color:#16C26A!important}
+.hud .kr,.hud .date{color:#5E6B78!important}
+.hud .clk{color:#1C2530!important}
+.hud .clk i{background:#16C26A!important}
+.hud-mode{background:#EEF5F0!important;border:1px solid #DCE7E0!important;color:#10A557!important}
+
+#dawnbook{background:#F6F9F7}
+#dawnbook .page{background:#F6F9F7!important}
+#dawnbook .sheen{display:none!important}
+
+/* 랜딩(첫 페이지) */
+#dawnbook .hero-tag{color:#10A557!important}
+#dawnbook .hero-title{background:linear-gradient(100deg,#10A557,#16C26A)!important;-webkit-background-clip:text;background-clip:text;color:transparent!important}
+#dawnbook .hero-sub{color:#1C2530!important}
+#dawnbook .hero-line{color:#5E6B78!important}
+#dawnbook .hero-hint{color:#9BA8B4!important}
+#dawnbook .hero-cta{background:linear-gradient(100deg,#10A557,#16C26A)!important;color:#fff!important}
+#dawnbook .tickwrap{background:linear-gradient(180deg,transparent,#F6F9F7)!important}
+#dawnbook .tk{color:#5E6B78!important}#dawnbook .tk b{color:#1C2530!important}
+
+/* 패널·공통 */
+#dawnbook .panel{background:#fff!important;border:1px solid #EAF1ED!important;box-shadow:0 2px 12px rgba(20,40,30,.05)!important}
+#dawnbook .dp-no{color:#16C26A!important}
+#dawnbook .dp-t{color:#1C2530!important}
+#dawnbook .dp-of,#dawnbook .rt{color:#9BA8B4!important}
+#dawnbook .pl{color:#5E6B78!important}
+#dawnbook .lvdot{background:#16C26A!important}
+#dawnbook .ixr{border-top-color:#F0F4F1!important}
+#dawnbook .ixr .n{color:#3A4452!important}
+#dawnbook .ixr .v{color:#1C2530!important}
+#dawnbook .big .v{color:#1C2530!important}
+#dawnbook .tldrp{color:#3A4452!important}
+#dawnbook .empty{color:#9BA8B4!important}
+#dawnbook .seg i{background:#E3E9E4!important}
+#dawnbook .seg i.on{background:#16C26A!important}
+#dawnbook .spark .u{stroke:#F23645}#dawnbook .spark .d{stroke:#2F73F0}
+
+/* 표 */
+#dawnbook .tbl th{color:#8A95A0!important;background:#F6F9F7!important;border-bottom-color:#EAF1ED!important}
+#dawnbook .tbl td{color:#1C2530!important;border-top-color:#F2F5F3!important}
+#dawnbook .tbl td .sub{color:#9BA8B4!important}
+#dawnbook .tbl tr.selrow{background:#EEF7F1!important}
+#dawnbook .tbl td.g{color:#10A557!important}
+
+/* 색상값(상승/하락) 라이트용 */
+#dawnbook .u{color:#F23645!important}#dawnbook .d{color:#2F73F0!important}
+
+/* 섹터전망·이슈·리포트 */
+#dawnbook .vrow{border-bottom-color:#F0F4F1!important}
+#dawnbook .vn{color:#1C2530!important}#dawnbook .vnote{color:#5E6B78!important}
+#dawnbook .vbadge.vp{color:#F23645!important;background:rgba(242,54,69,.1)!important}
+#dawnbook .vbadge.vd{color:#2F73F0!important;background:rgba(47,115,240,.1)!important}
+#dawnbook .vbadge.vm{color:#C98A00!important;background:rgba(240,180,0,.12)!important}
+#dawnbook .iss{border-bottom-color:#F0F4F1!important}
+#dawnbook .icat{background:#EEF5F0!important;color:#5E6B78!important}
+#dawnbook .itt{color:#1C2530!important}
+#dawnbook .report p{color:#3A4452!important}
+#dawnbook .report p::before{background:#16C26A!important}
+#dawnbook .rfine{color:#9BA8B4!important;border-top-color:#EAF1ED!important}
+#dawnbook .strat .s p{color:#3A4452!important}
+#dawnbook .nw .n{border-color:#F0F4F1!important}
+#dawnbook .tt{color:#1C2530!important}#dawnbook .mt{color:#9BA8B4!important}
+#dawnbook .bars .bt{background:#EEF2EF!important}
+
+/* 캘린더 */
+#dawnbook .cal .ev{border-color:#F0F4F1!important}
+#dawnbook .cal .ec{color:#1C2530!important}#dawnbook .cal .tm{color:#16C26A!important}
+
+/* 스크리너 탭 */
+#dawnbook .cattab{background:#F1F4F2!important;border:1px solid #E0E5EC!important;color:#5E6B78!important}
+#dawnbook .cattab.on{background:#16C26A!important;color:#fff!important;border-color:transparent!important}
+#dawnbook .catdesc{color:#5E6B78!important}
+
+/* 탐색기 입력 */
+#dawnbook .sinput{background:#F6F9F7!important;border:1px solid #DCE7E0!important;color:#1C2530!important}
+#dawnbook .sbtn{background:linear-gradient(100deg,#10A557,#16C26A)!important;color:#fff!important}
+
+/* 마인드맵 */
+#dawnbook .mindmap .mcore{fill:#fff!important;stroke:#16C26A!important;filter:drop-shadow(0 0 14px rgba(22,194,106,.25))!important}
+#dawnbook .mindmap .mscore{fill:#10A557!important}
+#dawnbook .mindmap .mcorel,#dawnbook .mindmap .mcorel2{fill:#5E6B78!important}
+#dawnbook .mindmap .mlink{stroke:rgba(22,194,106,.3)!important}
+#dawnbook .mindmap .mlink.on{stroke:#16C26A!important}
+#dawnbook .mlegend{color:#5E6B78!important}
+
+/* 하단 네비 */
+.bk-nav{background:#fff!important;border:1px solid #EAF1ED!important;box-shadow:0 4px 18px rgba(20,40,30,.08)!important}
+.bk-nav .arw{color:#5E6B78!important}
+.bk-nav .dt{background:#D5DDD7!important}
+.bk-nav .dt.on{background:#16C26A!important}
